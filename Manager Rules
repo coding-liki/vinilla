@@ -1,0 +1,28 @@
+All things are in "vendor" folder
+
+Each module has "vinilla_module.json" settings file
+
+"vinilla_module.json" has this structure.
+
+{
+    "vendor": "CodingLiki",
+    "module_name": "module_name",
+    "author": "Author",
+    "description": "",
+    "site": "",
+    "root_folder": "",
+    "depends_on": [
+        "first_dependency_url",
+        "second_dependency_url"
+    ]
+}
+
+Required fields are:
+    vendor
+    author
+
+If "module_name" is empty or equals "", then "module_name" sets to repository name:
+    for exampla, for repository 'https://github.com/Shiro7/mqtt_server_php.git' module_name will be "mqtt_server_php"
+
+If "root_folder" is empty or equals "", then "root_folder" sets to "/"
+
