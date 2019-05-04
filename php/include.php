@@ -28,9 +28,12 @@ function recursive_copy($src,$dst) {
                 recursive_copy($src .'/'. $file, $dst .'/'. $file);
 			}
 			else {
-                echo $src .'/'. $file;
-                echo " to ";
-                echo $dst .'/'. $file."\n";
+                if (strpos($src .'/'. $file, '.git') === FALSE) {
+                    echo $src .'/'. $file;
+                    echo " to ";
+                    echo $dst .'/'. $file."\n";
+                }
+                
 				copy($src .'/'. $file,$dst .'/'. $file);
 			}
 		}
