@@ -132,6 +132,9 @@ function updateModule($module_name){
         if (is_file("./vendor/$module_name/".SETTINGS_FILE)) {
             $old_settings = json_decode(file_get_contents("./vendor/$module_name/".SETTINGS_FILE), true);
             if (isset($old_settings['repo_url'])) {
+            } else {
+                chdir("./vendor/$module_name");
+                exec("git pull");
             }
         } else {
             echo "It is not Vinilla module!!!\nPlease run \n**********************\nvinilla_php install $module_name\n**********************\n";
