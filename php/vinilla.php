@@ -134,7 +134,7 @@ function updateModule($module_name){
             if (isset($old_settings['repo_url'])) {
             }
         } else {
-            echo "It is not Vinilla!!!\nPlease run \n**********************\nvinilla_php install $module_name\n**********************\n";
+            echo "It is not Vinilla module!!!\nPlease run \n**********************\nvinilla_php install $module_name\n**********************\n";
         }
     } else {
         echo "module is not installed!!!\nPlease run \n**********************\nvinilla_php install $module_name\n**********************\n";
@@ -155,15 +155,20 @@ if($argc <3){
     echo "You need to specify command(install/uninstall) and module url\n";
     exit(1);
 }
-switch($command){
-    case "install":
-        installModule($argv[2]);
-        break;
-    case "uninstall":
-        uninstallModule($argv[2]);
-        break;
-    default:
-        echo "Используй либо install либо uninstall";
+for ($i=2; $i<$argc;$i++) {
+    switch ($command) {
+        case "install":
+            installModule($argv[$i]);
+            break;
+        case "uninstall":
+            uninstallModule($argv[$i]);
+            break;
+        case "update":
+            updateModule($argv[$i]);
+            break;
+        default:
+            echo "Используй либо install либо uninstall либо update";
+    }
 }
 
 // print_r($options);
