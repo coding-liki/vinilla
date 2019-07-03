@@ -205,10 +205,13 @@ function updateCache(){
 // $options = getopt("", $longopts);
 
 $command = ""; 
+$one_commands = [
+    'update'
+];
 if($argc > 1){
     $command = $argv[1];
 }
-if($argc <3){
+if($argc <3 && !in_array($command, $one_commands)){
     echo "You need to specify command(install/uninstall) and module url\n";
     exit(1);
 }
