@@ -27,6 +27,7 @@ function checkTmpFolder(){
 }
 
 function checkVendorFolder($vendor, $work_folder){
+    echo "current dir = `$work_folder`";
     checkCreateFolder($work_folder.'/vendor/'.$vendor);
     return $work_folder.'/vendor/'.$vendor;
 }
@@ -77,12 +78,12 @@ function installModule($module_url, $updating=false, $check_tmp=true){
 
     $module_url = guessModuleUrl($module_url);
     if($module_url == ""){
-        echo "Module is not known!\nTry to update Cache\n vinilla update";
+        echo "Module is not known!\nTry to update Cache\n vinilla_php update\n";
         exit(1);
     }
-    if ($check_tmp) {
-        checkRootPath();
-    }
+    // if ($check_tmp) {
+    //     checkRootPath();
+    // }
     $module_name = explode("/", $module_url);
     $module_name = $module_name[count($module_name) - 1];
     $module_name = trim(str_replace(".git", "",$module_name ));
@@ -137,7 +138,7 @@ function installModule($module_url, $updating=false, $check_tmp=true){
         exit(1);
     }
     
-    $install_module_name = $settings['module_name'] ?? $module_name;
+    $install_module_name = $settings['name'] ?? $module_name;
 
     $vendor_dir = checkVendorFolder($vendor, $current_working_dir);
 
@@ -225,19 +226,12 @@ function post($url, $data){
 }
 function updateCache(){
     $cache_folder = __DIR__."/cache";
-        // $file_name =
+
     checkCreateFolder($cache_folder);
     $last_cache_id = "1";
     if (file_exists($cache_folder."/last_cache_id")) {
         $last_cache_id = file_get_contents($cache_folder."/last_cache_id");
     }
-    // $ch = curl_init();
-
-    // curl_setopt($ch, CURLOPT_URL, SERVER_URL."/cache/get_all");
-    // curl_setopt($ch, CURLOPT_POST, 1);
-    // curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    // curl_setopt($ch, CURLOPT_POSTFIELDS,
-    //         "cache_id=p1");
 
     $server_output = post("/cache/get_all", [ "cache_id"=> $last_cache_id]);
     $data = json_decode($server_output, true);
@@ -268,7 +262,7 @@ function loadCache(){
     $uncompressed = gzuncompress($gzdata);
     $json = json_decode($uncompressed, true);
     $cache_json = $json;
-    print_r($uncompressed);
+    // print_r($uncompressed);
     return $json;
 }
 
