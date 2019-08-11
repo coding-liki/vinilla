@@ -44,8 +44,9 @@ function recursive_copy($src,$dst) {
 
 function deleteDir($src) { 
     // $dir_root = 
-    if(!in_array(explode("/", $src)[1], ["tmp", "vendor"])){
-        echo "trying to delete not tmp folder";
+    $dir_path = explode("/", $src);
+    if(!in_array($dir_path[1], ["tmp", "vendor"]) && !in_array($dir_path[0], ["tmp", "vendor"])){
+        echo "trying to delete not tmp folder `$src`\n";
         exit(1);
     }
     $dir = opendir($src);

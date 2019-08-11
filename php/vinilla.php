@@ -47,6 +47,23 @@ function gitFetchModuleToTmp($module_url){
     }
 }
 
+function guessModuleUrl($module_url){
+    if(strpos($module_url,"http") === 0){
+        return $module_url;
+    }
+
+    $module_name_mass = explode("/", $module_url);
+
+    $cache = loadCache();
+    if(count($module_name_mass) == 2){
+        $vendor = $module_name_mass[0];
+        $module_name = $module_name_mass[1];
+        if(isset($cache[$vendor]) && isset($cache[$vendor][$module_name]) && isset($cache[$vendor][$module_name]['repo_url'])){
+            return $cache[$vendor][$module_name]['repo_url'];
+        }
+        return "";
+    }
+}
 /**
  * Устанавливаем модуль с помощью git
  *
@@ -54,6 +71,15 @@ function gitFetchModuleToTmp($module_url){
  * @return void
  */
 function installModule($module_url, $updating=false, $check_tmp=true){
+    
+
+    
+
+    $module_url = guessModuleUrl($module_url);
+    if($module_url == ""){
+        echo "Module is not known!\nTry to update Cache\n vinilla update";
+        exit(1);
+    }
     if ($check_tmp) {
         checkRootPath();
     }
@@ -75,7 +101,7 @@ function installModule($module_url, $updating=false, $check_tmp=true){
     
     
     if(is_dir("./$module_name")){
-        deleteDir("./$module_name");
+        deleteDir(TMP_DIR."/$module_name");
     }
     $clone_result = exec("git clone $module_url");
 
@@ -94,10 +120,10 @@ function installModule($module_url, $updating=false, $check_tmp=true){
     $settings = json_decode(file_get_contents("./".SETTINGS_FILE), true);
     print_r($settings);
     
-    if(array_key_exists('require', $settings)){
+    if(array_key_exists('depends_on', $settings) || array_key_exists('require', $settings)){
         echo "Has dependings!!!";
 
-        $dependings = $settings['require'];
+        $dependings = $settings['depends_on'] ?? $settings['require'];
 
         foreach($dependings as $depending){
             installModule($depending);
@@ -184,18 +210,71 @@ function updateModule($module_name){
         echo "module is not installed!!!\nPlease run \n**********************\nvinilla_php install $module_name\n**********************\n";
     }
 }
-
-function updateCache(){
+function post($url, $data){
     $ch = curl_init();
 
-    curl_setopt($ch, CURLOPT_URL, SERVER_URL."/cache/get_all");
+    curl_setopt($ch, CURLOPT_URL, SERVER_URL.$url);
     curl_setopt($ch, CURLOPT_POST, 1);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS,$data);
 
     $server_output = curl_exec($ch);
-    echo "cache_json = $server_output\n";
     curl_close ($ch);
 
+    return $server_output;
+}
+function updateCache(){
+    $cache_folder = __DIR__."/cache";
+        // $file_name =
+    checkCreateFolder($cache_folder);
+    $last_cache_id = "1";
+    if (file_exists($cache_folder."/last_cache_id")) {
+        $last_cache_id = file_get_contents($cache_folder."/last_cache_id");
+    }
+    // $ch = curl_init();
+
+    // curl_setopt($ch, CURLOPT_URL, SERVER_URL."/cache/get_all");
+    // curl_setopt($ch, CURLOPT_POST, 1);
+    // curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    // curl_setopt($ch, CURLOPT_POSTFIELDS,
+    //         "cache_id=p1");
+
+    $server_output = post("/cache/get_all", [ "cache_id"=> $last_cache_id]);
+    $data = json_decode($server_output, true);
+    if($data['result'] == "new"){
+        
+        $new_id = $data['new_id'];
+        echo "Has new update\nid = $new_id\n";
+        $server_output = post("/cache/get_all", [ "cache_id"=> $new_id, "force" => true]);
+        file_put_contents($cache_folder."/$new_id", $server_output);
+        file_put_contents($cache_folder."/last_cache_id", $new_id);
+    } else {
+        echo "Cache is up to date!!!\n";
+    }
+}
+
+function loadCache(){
+    static $cache_json = null;
+    if($cache_json != null){
+        return $cache_json;
+    }
+    $cache_folder = __DIR__."/cache";
+    if(!file_exists($cache_folder."/last_cache_id")){
+        return false;
+    }
+    $last_cache_id = file_get_contents($cache_folder."/last_cache_id");
+    $gzdata = file_get_contents($cache_folder."/$last_cache_id");
+
+    $uncompressed = gzuncompress($gzdata);
+    $json = json_decode($uncompressed, true);
+    $cache_json = $json;
+    print_r($uncompressed);
+    return $json;
+}
+
+function clearVendors(){
+    deleteDir("./vendor");
+    echo "Deleting all vendors\n";
 }
 // $longopts  = array(
 //     "install",     // Обязательное значение
@@ -206,7 +285,9 @@ function updateCache(){
 
 $command = ""; 
 $one_commands = [
-    'update'
+    'update',
+    'load',
+    'clear'
 ];
 if($argc > 1){
     $command = $argv[1];
@@ -226,6 +307,9 @@ for ($i=2; $i<$argc;$i++) {
         case "update":
             updateModule($argv[$i]);
             break;
+        case "getcache":
+            updateCache();
+            break;
         default:
             echo "Используй либо install либо uninstall либо update";
     }
@@ -234,6 +318,12 @@ if($argc <3){
     switch($command) {
         case "update":
             updateCache();
+            break;
+        case "clear":
+            clearVendors();
+            break;
+        case "load":
+            loadCache();
             break;
     }
 }
