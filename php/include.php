@@ -40,9 +40,9 @@ function recursive_copy($src,$dst) {
 			}
 			else {
                 if (strpos($src .'/'. $file, '.git') === FALSE) {
-                    echo $src .'/'. $file;
-                    echo " to ";
-                    echo $dst .'/'. $file."\n";
+                    // echo $src .'/'. $file;
+                    // echo " to ";
+                    // echo $dst .'/'. $file."\n";
                 }
                 
 				copy($src .'/'. $file,$dst .'/'. $file);
@@ -79,7 +79,7 @@ function deleteDir($src) {
 function checkCreateFolder($folder, $mode = 0777){
     if(!is_dir($folder)){
         mkdir($folder, $mode, true);
-        echo "Create folder\n";
+        echo "Create folder '$folder'\n";
         return false;
     }
 
@@ -102,7 +102,7 @@ function checkTmpFolder(){
 }
 
 function checkVendorFolder($vendor, $work_folder){
-    echo "current dir = `$work_folder`";
+    // echo "current dir = `$work_folder`";
     checkCreateFolder($work_folder.'/vendor/'.$vendor);
     return $work_folder.'/vendor/'.$vendor;
 }
