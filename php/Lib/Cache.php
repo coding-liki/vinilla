@@ -20,7 +20,7 @@ class Cache{
     }
 
     public static function updateCache(){
-        $cache_folder = __DIR__."/cache";
+        $cache_folder = __DIR__."/../cache";
         echo "Start updating\n";
         checkCreateFolder($cache_folder);
         $last_cache_id = "1";
@@ -35,6 +35,7 @@ class Cache{
             $new_id = $data['new_id'];
             echo "Has new update\nid = $new_id\n";
             $server_output = self::post("/cache/get_all", [ "cache_id"=> $new_id, "force" => true]);
+            
             file_put_contents($cache_folder."/$new_id", $server_output);
             file_put_contents($cache_folder."/last_cache_id", $new_id);
         } else {
@@ -53,7 +54,10 @@ class Cache{
         if(!file_exists($cache_folder."/last_cache_id")){
             return false;
         }
+
         $last_cache_id = file_get_contents($cache_folder."/last_cache_id");
+        
+        echo "lasst cache id = $last_cache_id\n";
         $gzdata = file_get_contents($cache_folder."/$last_cache_id");
     
         $uncompressed = gzuncompress($gzdata);
@@ -77,6 +81,8 @@ class Cache{
                 $json['index'][$module['repo_url']] = $module['vendor']."/".$module['name'];
             }
         }
+
+        // print_r(self::$modules);
         $cache_json = $json;
         return $json;
     }
