@@ -139,6 +139,16 @@ function clearVendors(){
     echo "Deleting all vendors\n";
 }
 
+
+function selfUpdate(){
+    $interpretator = "php";
+    $install_dir = str_replace("/php","",__DIR__);
+    chdir(TMP_DIR);
+    gitFetchModule("https://github.com/coding-liki/vinilla.git", "./");
+    chdir("vinilla");
+    exec("./install.sh -t $interpretator -f $install_dir");
+    echo "UPdated successfully";
+}
 // $longopts  = array(
 //     "install",     // Обязательное значение
 //     "uninstall",
@@ -150,7 +160,8 @@ $command = "";
 $one_commands = [
     'update',
     'load',
-    'clear'
+    'clear',
+    "self-update"
 ];
 if($argc > 1){
     $command = $argv[1];
@@ -181,6 +192,9 @@ if($argc <3){
     switch($command) {
         case "update":
             Cache::updateCache();
+            break;
+        case "self-update":
+            selfUpdate();
             break;
         case "clear":
             clearVendors();

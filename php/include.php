@@ -115,6 +115,8 @@ function gitFetchModule($module_url, $folder){
     $module_name = $module_name[count($module_name) - 1];
     $module_name = trim(str_replace(".git", "",$module_name ));
     if(is_dir("./$module_name")){
+        chdir("./$module_name");
+        exec("git pull");
         chdir($cwd);
         return $module_name;
     }
