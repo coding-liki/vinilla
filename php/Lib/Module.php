@@ -6,8 +6,8 @@ class Module{
     public $settings = [];
     public $git_name = "";
     public $initialised = false;
-public $local_version = "";
-
+    public $local_version = "";
+    public $scripts;
     public function __construct($settings)
     {
         if(is_string($settings)){
@@ -19,6 +19,7 @@ public $local_version = "";
         $this->name =$settings['name'] ?? "";
         $this->vendor =$settings['vendor'] ?? "";
         $this->url =$settings['repo_url'] ?? "";
+        $this->scripts = $settings['scripts'] ?? [];
 
         $git_module_name = explode("/", $this->url);
         $git_module_name = $git_module_name[count($git_module_name) - 1];
@@ -41,6 +42,8 @@ public $local_version = "";
             $this->name =$module_settings['name'] ?? "";
             $this->vendor =$module_settings['vendor'] ?? "";
             $this->url =$module_settings['repo_url'] ?? "";
+            $this->scripts = $module_settings['scripts'] ?? [];
+
             $this->git_name = $git_module_name;
 
             if($this->name != "" && $this->vendor != "" && $this->url != "" ){
@@ -63,7 +66,13 @@ public $local_version = "";
 
         return [];
     }
-
+    public function runScripts(){
+        print_r($this->scripts);
+        foreach($this->scripts as $script){
+            $script_o = new Script($this->getFullName(), $script['name'], $script['type'] ?? "php");
+            $script_o->run();
+        }
+    }
     public function isInstalled(){
         $cwd = getcwd();
         chdir(CURRENT_WORKIN_DIR);

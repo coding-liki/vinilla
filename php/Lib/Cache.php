@@ -62,16 +62,23 @@ class Cache{
     
         $uncompressed = gzuncompress($gzdata);
         $json = json_decode($uncompressed, true);
+        // print_r($json);
         $json['index'] = [];
         $id = 0;
-
         self::$modules = [];
         self::$nameIndex = [];
         self::$fullNameIndex = [];
         self::$urlIndex = [];
 
-        foreach($json as $vendor) { 
+        foreach($json as $v_key => $vendor) { 
+            if($v_key == "index"){
+                continue;
+            }
             foreach ($vendor as $key => $module) {
+                if(is_string($module)){
+                    echo "Is string\n";
+                    $module = json_decode($module, true);
+                }
                 $new_module = new Module($module);
                 self::$modules[$id] = $new_module;
                 self::$nameIndex[$new_module->name] = $new_module;

@@ -99,6 +99,7 @@ function installModule($module_url, $updating=false, $check_tmp=true){
         echo "copying modules files from '".TMP_DIR."/$module_name' to '$vendor_dir/$install_module_name'\n";
         recursive_copy(TMP_DIR."/$module_name", "$vendor_dir/$install_module_name");
         echo "copy complete!\n\n";
+        $module->runScripts();
     } else if($old_settings['version'] < $module->settings['version']) {
         echo "module can be updated\nPlease run \n**********************\nvinilla_php update $vendor/$install_module_name\n**********************\n";
     } else {

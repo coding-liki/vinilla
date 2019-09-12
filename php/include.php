@@ -152,6 +152,7 @@ function guessModuleUrl($module_url){
         return "";
     }
 }
+require_once __DIR__."/Lib/Script.php";
 require_once __DIR__."/Lib/Module.php";
 
 require_once __DIR__."/Lib/Cache.php";
