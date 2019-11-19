@@ -1,7 +1,7 @@
 <?php
 
 
-require_once __DIR__."/include.php";
+require_once __DIR__ . "/include.php";
 
 
 
@@ -11,11 +11,12 @@ require_once __DIR__."/include.php";
  * @param [type] $module_url
  * @return void
  */
-function installModule($module_url, $updating=false, $check_tmp=true){
-   
+function installModule($module_url, $updating = false, $check_tmp = true, bool $onlyDebs = true)
+{
+
     $module = Cache::$fullNameIndex[$module_url] ?? Cache::$urlIndex[$module_url] ??  new Module($module_url);
-    
-    if(!$module->initialised){
+
+    if (!$module->initialised) {
         echo "Module is not known!\nTry to update Cache\n vinilla_php update\n";
         exit(1);
     }
@@ -23,57 +24,53 @@ function installModule($module_url, $updating=false, $check_tmp=true){
     // if ($check_tmp) {
     //     checkTmpFolder();
     // }
-    
+
     /** Проверим зависимости */
     $dependencies = $module->getDependencies();
-    foreach($dependencies as $dependency){
+    foreach ($dependencies as $dependency) {
         installModule($dependency, $updating, false);
     }
 
-    if($module->isInstalled()){
-        echo "Module `".$module->getFullName()."` is allredy installed\n";
+    if ($module->isInstalled()) {
+        echo "Module `" . $module->getFullName() . "` is allredy installed\n";
         $module->loadLocalVersion();
-        if($module->local_version != $module->settings['version']){
-            echo "Module `".$module->getFullName()."` can be updated\nRun 'vinilla_php update ".$module->getFullName()."'\n";
+        if ($module->local_version != $module->settings['version']) {
+            echo "Module `" . $module->getFullName() . "` can be updated\nRun 'vinilla_php update " . $module->getFullName() . "'\n";
         }
-        return ;
+        return;
     }
 
-    echo "Installing `".$module->getFullName()."`\n";
+    echo "Installing `" . $module->getFullName() . "`\n";
 
     $current_working_dir = CURRENT_WORKIN_DIR;
 
-    
+
     $cwd = getcwd();
     chdir(TMP_DIR);
-    
-    if(is_dir("./$module->git_name")){
+
+    if (is_dir("./$module->git_name")) {
         chdir($module->git_name);
         $pull_result = exec("git pull");
     } else {
-        gitFetchModule($module->url,TMP_DIR);
+        gitFetchModule($module->url, TMP_DIR);
         chdir("./$module->git_name");
     }
 
-    
-    
-    if(!is_file("./".SETTINGS_FILE)){
+
+
+    if (!is_file("./" . SETTINGS_FILE)) {
         echo "Not Vinilla module\n";
         exit(1);
     }
 
-    // $settings = json_decode(file_get_contents("./".SETTINGS_FILE), true);
-    // print_r($settings);
-    
-    
-    
+
     $vendor = $module->vendor;
 
-    if($vendor == ""){
+    if ($vendor == "") {
         echo "vendor is not set in module settings\n";
         exit(1);
     }
-    
+
     $install_module_name = $module->name;
 
     $vendor_dir = checkVendorFolder($vendor, CURRENT_WORKIN_DIR);
@@ -81,26 +78,26 @@ function installModule($module_url, $updating=false, $check_tmp=true){
     chdir($vendor_dir);
 
     $old_settings = [];
-    if(checkCreateFolder("./$install_module_name")){
+    if (checkCreateFolder("./$install_module_name")) {
         chdir("./$install_module_name");
-        if ( is_file("./".SETTINGS_FILE) ) {
-            $old_settings = json_decode(file_get_contents("./".SETTINGS_FILE), true);
+        if (is_file("./" . SETTINGS_FILE)) {
+            $old_settings = json_decode(file_get_contents("./" . SETTINGS_FILE), true);
         } else {
             echo "Was Not Vinilla module\nReinstall as Vinilla module (Y/N)?\n";
             $answer = readline();
-            if(in_array( $answer, ["N", "n", "н", "Н", "No", "no", "Нет", "нет"])){
+            if (in_array($answer, ["N", "n", "н", "Н", "No", "no", "Нет", "нет"])) {
                 exit(1);
-            }          
+            }
         }
     }
 
     $module_name = $module->git_name;
     if (!isset($old_settings['version']) || ($old_settings['version'] < $settings['version'] && $updating)) {
-        echo "copying modules files from '".TMP_DIR."/$module_name' to '$vendor_dir/$install_module_name'\n";
-        recursive_copy(TMP_DIR."/$module_name", "$vendor_dir/$install_module_name");
+        echo "copying modules files from '" . TMP_DIR . "/$module_name' to '$vendor_dir/$install_module_name'\n";
+        recursive_copy(TMP_DIR . "/$module_name", "$vendor_dir/$install_module_name");
         echo "copy complete!\n\n";
         $module->runScripts();
-    } else if($old_settings['version'] < $module->settings['version']) {
+    } else if ($old_settings['version'] < $module->settings['version']) {
         echo "module can be updated\nPlease run \n**********************\nvinilla_php update $vendor/$install_module_name\n**********************\n";
     } else {
         echo "You have the newest version of $vendor/$install_module_name\n";
@@ -108,42 +105,63 @@ function installModule($module_url, $updating=false, $check_tmp=true){
     chdir($cwd);
 }
 
-function uninstallModule($module_name){
-    checkRootPath();
-    $module = Cache::$fullNameIndex[$module_name] ?? Cache::$urlIndex[$module_name] ??  new Module($module_name);
-    echo $module->getFullName()." uninstalling\n";
-    if($module->isInstalled()){
-        deleteDir("./vendor/".$module->getFullName());
-    } else {
-        echo "module is not installed!!!\nPlease run \n**********************\nvinilla_php install ".$module->getFullName()."\n**********************\n";
+function checkAndInstallDependencies(Module $module){
+    $dependencies = $module->getDependencies();
+    foreach ($dependencies as $dependency) {
+        installModule($dependency,false, false);
     }
 }
 
-function updateModule($module_name){
+function uninstallModule($module_name)
+{
+    checkRootPath();
+    $module = Cache::$fullNameIndex[$module_name] ?? Cache::$urlIndex[$module_name] ??  new Module($module_name);
+    echo $module->getFullName() . " uninstalling\n";
+    if ($module->isInstalled()) {
+        deleteDir("./vendor/" . $module->getFullName());
+    } else {
+        echo "module is not installed!!!\nPlease run \n**********************\nvinilla_php install " . $module->getFullName() . "\n**********************\n";
+    }
+}
+
+function updateModule($module_name)
+{
     checkRootPath();
     $module = Cache::$fullNameIndex[$module_name] ?? Cache::$urlIndex[$module_name] ??  new Module($module_name);
     if ($module->isInstalled()) {
-        if (is_file("./vendor/".$module->getFullName()."/".SETTINGS_FILE)) {
-            chdir("./vendor/".$module->getFullName());
+        if (is_file("./vendor/" . $module->getFullName() . "/" . SETTINGS_FILE)) {
+            chdir("./vendor/" . $module->getFullName());
             exec("git pull");
         } else {
-            echo "It is not Vinilla module!!!\nPlease run \n**********************\nvinilla_php install ".$module->getFullName()."\n**********************\n";
+            echo "It is not Vinilla module!!!\nPlease run \n**********************\nvinilla_php install " . $module->getFullName() . "\n**********************\n";
         }
     } else {
-        echo "module is not installed!!!\nPlease run \n**********************\nvinilla_php install ".$module->getFullName()."\n**********************\n";
+        echo "module is not installed!!!\nPlease run \n**********************\nvinilla_php install " . $module->getFullName() . "\n**********************\n";
     }
 }
 
+function initialiseProject()
+{
+    chdir(CURRENT_WORKIN_DIR);
+    echo "\nstartInit\n";
+    if(file_exists(SETTINGS_FILE)){
+        $settings = file_get_contents(SETTINGS_FILE);
+        $module = new Module(json_decode($settings, true));
+        checkAndInstallDependencies($module);
+    }
+}
 
-function clearVendors(){
+function clearVendors()
+{
     deleteDir("./vendor");
     echo "Deleting all vendors\n";
 }
 
 
-function selfUpdate(){
+function selfUpdate()
+{
     $interpretator = "php";
-    $install_dir = str_replace("/php","",__DIR__);
+    $install_dir = str_replace("/php", "", __DIR__);
     chdir(TMP_DIR);
     gitFetchModule("https://github.com/coding-liki/vinilla.git", "./");
     chdir("vinilla");
@@ -153,25 +171,26 @@ function selfUpdate(){
 // $longopts  = array(
 //     "install",     // Обязательное значение
 //     "uninstall",
-    
+
 // );
 // $options = getopt("", $longopts);
 checkTmpFolder();
-$command = ""; 
+$command = "";
 $one_commands = [
+    'init',
     'update',
     'load',
     'clear',
     "self-update"
 ];
-if($argc > 1){
+if ($argc > 1) {
     $command = $argv[1];
 }
-if($argc <3 && !in_array($command, $one_commands)){
+if ($argc < 3 && !in_array($command, $one_commands)) {
     echo "You need to specify command(install/uninstall) and module url\n";
     exit(1);
 }
-for ($i=2; $i<$argc;$i++) {
+for ($i = 2; $i < $argc; $i++) {
     switch ($command) {
         case "install":
             installModule($argv[$i]);
@@ -189,8 +208,11 @@ for ($i=2; $i<$argc;$i++) {
             echo "Используй либо install либо uninstall либо update";
     }
 }
-if($argc <3){
-    switch($command) {
+if ($argc < 3) {
+    switch ($command) {
+        case "init":
+            initialiseProject();
+            break;
         case "update":
             Cache::updateCache();
             break;

@@ -32,10 +32,10 @@ class Module{
         }
     }
 
-    public function init($module_url){
-        $git_module_name = gitFetchModule($module_url, TMP_DIR);
-        if(is_file(TMP_DIR."/$git_module_name/".SETTINGS_FILE)){
-            $module_settings = json_decode(file_get_contents(TMP_DIR."/$git_module_name/".SETTINGS_FILE), true);
+    public function init($module_url, $tmp_folder = TMP_DIR){
+        $git_module_name = gitFetchModule($module_url, $tmp_folder);
+        if(is_file($tmp_folder."/$git_module_name/".SETTINGS_FILE)){
+            $module_settings = json_decode(file_get_contents($tmp_folder."/$git_module_name/".SETTINGS_FILE), true);
 
             $this->settings = $module_settings;
 
