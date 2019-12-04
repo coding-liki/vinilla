@@ -13,7 +13,7 @@ class Module{
         if(is_string($settings)){
             $this->init($settings);
             return;
-        } 
+        }
         $this->settings = $settings;
 
         $this->name =$settings['name'] ?? "";
@@ -24,7 +24,7 @@ class Module{
         $git_module_name = explode("/", $this->url);
         $git_module_name = $git_module_name[count($git_module_name) - 1];
         $git_module_name = trim(str_replace(".git", "",$git_module_name ));
-        
+
         $this->git_name = $git_module_name;
 
         if($this->name != "" && $this->vendor != "" && $this->url != "" ){
@@ -59,7 +59,7 @@ class Module{
     public function getDependencies(){
         if(isset($this->settings['depends_on']) )
             return $this->settings['depends_on'];
-        
+
         if(isset($this->settings['dependencies']) ){
             return $this->settings['dependencies'];
         }
@@ -67,7 +67,6 @@ class Module{
         return [];
     }
     public function runScripts(){
-        print_r($this->scripts);
         foreach($this->scripts as $script){
             $script_o = new Script($this->getFullName(), $script['name'], $script['type'] ?? "php");
             $script_o->run();

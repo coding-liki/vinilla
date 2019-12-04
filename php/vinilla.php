@@ -93,7 +93,6 @@ function installModule($module_url, $updating = false, $check_tmp = true, bool $
 
     $module_name = $module->git_name;
     if (!isset($old_settings['version']) || ($old_settings['version'] < $settings['version'] && $updating)) {
-        echo "copying modules files from '" . TMP_DIR . "/$module_name' to '$vendor_dir/$install_module_name'\n";
         recursive_copy(TMP_DIR . "/$module_name", "$vendor_dir/$install_module_name");
         echo "copy complete!\n\n";
         $module->runScripts();

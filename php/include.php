@@ -18,14 +18,14 @@ function rcopy($src, $dst) {
         mkdir($dst);
         $files = scandir($src);
         foreach ($files as $file)
-        if ($file != "." && $file != "..") rcopy("$src/$file", "$dst/$file"); 
+        if ($file != "." && $file != "..") rcopy("$src/$file", "$dst/$file");
     }
     else if (file_exists($src)) copy($src, $dst);
 }
 
 
-/* 
-* This function copy $source directory and all files 
+/*
+* This function copy $source directory and all files
 * and sub directories to $destination folder
 */
 
@@ -44,7 +44,7 @@ function recursive_copy($src,$dst) {
                     // echo " to ";
                     // echo $dst .'/'. $file."\n";
                 }
-                
+
 				copy($src .'/'. $file,$dst .'/'. $file);
 			}
 		}
@@ -53,25 +53,25 @@ function recursive_copy($src,$dst) {
 }
 
 
-function deleteDir($src) { 
-    // $dir_root = 
+function deleteDir($src) {
+    // $dir_root =
     $dir_path = explode("/", $src);
     if(!in_array($dir_path[1], ["tmp", "vendor"]) && !in_array($dir_path[0], ["tmp", "vendor"])){
         echo "trying to delete not tmp folder `$src`\n";
         exit(1);
     }
     $dir = opendir($src);
-    while(false !== ( $file = readdir($dir)) ) { 
-        if (( $file != '.' ) && ( $file != '..' )) { 
-            if ( is_dir($src . '/' . $file) ) { 
-                deleteDir($src . '/' . $file); 
+    while(false !== ( $file = readdir($dir)) ) {
+        if (( $file != '.' ) && ( $file != '..' )) {
+            if ( is_dir($src . '/' . $file) ) {
+                deleteDir($src . '/' . $file);
             }
-            else { 
-                unlink($src . '/' . $file); 
+            else {
+                unlink($src . '/' . $file);
             }
         }
     }
-    closedir($dir); 
+    closedir($dir);
     rmdir($src);
 
 }
@@ -79,7 +79,6 @@ function deleteDir($src) {
 function checkCreateFolder($folder, $mode = 0777){
     if(!is_dir($folder)){
         mkdir($folder, $mode, true);
-        echo "Create folder '$folder'\n";
         return false;
     }
 
@@ -110,7 +109,7 @@ function checkVendorFolder($vendor, $work_folder){
 function gitFetchModule($module_url, $folder){
     $cwd = getcwd();
     chdir($folder);
-    
+
     $module_name = explode("/", $module_url);
     $module_name = $module_name[count($module_name) - 1];
     $module_name = trim(str_replace(".git", "",$module_name ));
@@ -122,7 +121,7 @@ function gitFetchModule($module_url, $folder){
     }
     $output = "";
     $clone_result = 0;
-    exec("git clone $module_url", $output, $clone_result);
+    exec("git clone $module_url &>/dev/null", $output, $clone_result);
     if($clone_result != 0){
         echo "Fetching error\n";
         exit(1);
@@ -142,7 +141,7 @@ function guessModuleUrl($module_url){
 
     $module_name_mass = explode("/", $module_url);
 
-  
+
     if(count($module_name_mass) == 2){
         $vendor = $module_name_mass[0];
         $module_name = $module_name_mass[1];
