@@ -208,7 +208,7 @@ if ($argc > 1) {
 }
 function echoHelp()
 {
-    echo "Для установки зависимостей текущего проекта либо инициализации пучтого файла конфигурации используйте `vinilla_php init`\n";
+    echo "Для установки зависимостей текущего проекта либо инициализации пустого файла конфигурации используйте `vinilla_php init`\n";
     echo "Для установки модуля используйте `vinilla_php install MODULE_URL`\n";
     echo "Для удаления модуля используйте `vinilla_php uninstall MODULE_URL`\n";
     echo "Для обновления модуля используйте `vinilla_php update MODULE_URL`\n";
