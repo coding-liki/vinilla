@@ -196,6 +196,7 @@ function selfUpdate()
 checkTmpFolder();
 $command = "";
 $one_commands = [
+    'help',
     'init',
     'update',
     'load',
@@ -205,14 +206,19 @@ $one_commands = [
 if ($argc > 1) {
     $command = $argv[1];
 }
-if ($argc < 3 && !in_array($command, $one_commands)) {
-    echo "Для установки зависимостей текущего проекта используйте `vinilla_php init`\n";
+function echoHelp()
+{
+    echo "Для установки зависимостей текущего проекта либо инициализации пучтого файла конфигурации используйте `vinilla_php init`\n";
     echo "Для установки модуля используйте `vinilla_php install MODULE_URL`\n";
     echo "Для удаления модуля используйте `vinilla_php uninstall MODULE_URL`\n";
     echo "Для обновления модуля используйте `vinilla_php update MODULE_URL`\n";
     echo "Для обновления кэша используйте `vinilla_php update`\n";
     echo "Для обновления Vinilla Packet Manager используйте `vinilla_php self-update`\n";
     exit(1);
+}
+
+if ($argc < 3 && !in_array($command, $one_commands)) {
+    echoHelp();
 }
 for ($i = 2; $i < $argc; $i++) {
     switch ($command) {
@@ -234,6 +240,9 @@ for ($i = 2; $i < $argc; $i++) {
 }
 if ($argc < 3) {
     switch ($command) {
+        case 'help':
+            echoHelp();
+            break;
         case "init":
             initialiseProject();
             break;
