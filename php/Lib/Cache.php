@@ -30,7 +30,7 @@ class Cache{
         echo "last cache id = $last_cache_id\n";
         $server_output = self::post("/cache/get_all", [ "cache_id"=> $last_cache_id]);
         $data = json_decode($server_output, true);
-        if($data['result'] == "new"){
+        if($data['result'] === "new"){
             
             $new_id = $data['new_id'];
             echo "Has new update\nid = $new_id\n";
@@ -43,23 +43,23 @@ class Cache{
         }
     }
     
-    public static function loadCache(){
+    public static function loadCache(): array{
         static $cache_json = null;
 
         echo "Loading Cache\n";
-        if($cache_json != null){
+        if($cache_json !== null){
             return $cache_json;
         }
         $cache_folder = __DIR__."/../cache";
         if(!file_exists($cache_folder."/last_cache_id")){
-            return false;
+            throw new RuntimeException("Обновите кэш");
         }
 
         $last_cache_id = file_get_contents($cache_folder."/last_cache_id");
         
-        $gzdata = file_get_contents($cache_folder."/$last_cache_id");
+        $compressedData = file_get_contents($cache_folder."/$last_cache_id");
     
-        $uncompressed = gzuncompress($gzdata);
+        $uncompressed = gzuncompress($compressedData);
         $json = json_decode($uncompressed, true);
         $json['index'] = [];
         $id = 0;
