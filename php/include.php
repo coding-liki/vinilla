@@ -15,7 +15,9 @@ error_reporting(E_ALL);
 function rcopy($src, $dst) {
     if (file_exists($dst)) rrmdir($dst);
     if (is_dir($src)) {
-        mkdir($dst);
+        if (!mkdir($dst) && !is_dir($dst)) {
+            throw new \RuntimeException(sprintf('Directory "%s" was not created', $dst));
+        }
         $files = scandir($src);
         foreach ($files as $file)
         if ($file != "." && $file != "..") rcopy("$src/$file", "$dst/$file");
@@ -31,7 +33,9 @@ function rcopy($src, $dst) {
 
 function recursive_copy($src,$dst) {
 	$dir = opendir($src);
-	@mkdir($dst);
+    if (!mkdir($dst) && !is_dir($dst)) {
+        throw new \RuntimeException(sprintf('Directory "%s" was not created', $dst));
+    }
 	while(( $file = readdir($dir)) ) {
 		if (( $file != '.' ) && ( $file != '..' )) {
 			if ( is_dir($src . '/' . $file) ) {
@@ -78,7 +82,9 @@ function deleteDir($src) {
 
 function checkCreateFolder($folder, $mode = 0777){
     if(!is_dir($folder)){
-        mkdir($folder, $mode, true);
+        if (!mkdir($folder, $mode, true) && !is_dir($folder)) {
+            throw new \RuntimeException(sprintf('Directory "%s" was not created', $folder));
+        }
         return false;
     }
 
@@ -95,9 +101,7 @@ function checkRootPath(){
 }
 
 function checkTmpFolder(){
-    if(checkCreateFolder(TMP_DIR)){
-        echo TMP_DIR." already exists\n";
-    }
+    checkCreateFolder(TMP_DIR);
 }
 
 function checkVendorFolder($vendor, $work_folder){
