@@ -21,10 +21,6 @@ function installModule($module_url, $updating = false, $check_tmp = true, bool $
         exit(1);
     }
 
-    // if ($check_tmp) {
-    //     checkTmpFolder();
-    // }
-
     /** Проверим зависимости */
     $dependencies = $module->getDependencies();
     foreach ($dependencies as $dependency) {
@@ -92,15 +88,27 @@ function installModule($module_url, $updating = false, $check_tmp = true, bool $
     }
 
     $module_name = $module->git_name;
-    if (!isset($old_settings['version']) || ($old_settings['version'] < $settings['version'] && $updating)) {
+    if (!isset($old_settings['version']) || ($old_settings['version'] < $module->settings['version'] && $updating)) {
         recursive_copy(TMP_DIR . "/$module_name", "$vendor_dir/$install_module_name");
         echo "copy complete!\n\n";
         $module->runScripts();
+        $theCwd = getcwd();
+        chdir($current_working_dir);
+        $settings = file_get_contents(SETTINGS_FILE);
+        $project = new Module(json_decode($settings, true));
+        $dependencies = $project->getDependencies();
+        $dependencies[] = $module->getFullName();
+        $dependencies = array_values(array_unique($dependencies));
+        $project->setDependencies($dependencies);
+        $settings = json_encode($project->settings);
+        file_put_contents(SETTINGS_FILE, $settings);
+        chdir($theCwd);
     } else if ($old_settings['version'] < $module->settings['version']) {
         echo "module can be updated\nPlease run \n**********************\nvinilla_php update $vendor/$install_module_name\n**********************\n";
     } else {
         echo "You have the newest version of $vendor/$install_module_name\n";
     }
+
     chdir($cwd);
 }
 
@@ -147,6 +155,18 @@ function initialiseProject()
         $settings = file_get_contents(SETTINGS_FILE);
         $module = new Module(json_decode($settings, true));
         checkAndInstallDependencies($module);
+    } else {
+        $settings = [];
+        echo "Введите название проекта: ";
+        $settings['name'] = readline();
+        echo "Введите вендора проекта: ";
+        $settings['vendor'] = readline();
+        echo "Введите описание проекта: ";
+        $settings['description'] = readline();
+        echo "Введите адрес репозитория для проекта: ";
+        $settings['repo_url'] = readline();
+
+        file_put_contents(SETTINGS_FILE, json_encode($settings));
     }
 }
 
@@ -186,7 +206,12 @@ if ($argc > 1) {
     $command = $argv[1];
 }
 if ($argc < 3 && !in_array($command, $one_commands)) {
-    echo "You need to specify command(install/uninstall) and module url\n";
+    echo "Для установки зависимостей текущего проекта используйте `vinilla_php init`\n";
+    echo "Для установки модуля используйте `vinilla_php install MODULE_URL`\n";
+    echo "Для удаления модуля используйте `vinilla_php uninstall MODULE_URL`\n";
+    echo "Для обновления модуля используйте `vinilla_php update MODULE_URL`\n";
+    echo "Для обновления кэша используйте `vinilla_php update`\n";
+    echo "Для обновления Vinilla Packet Manager используйте `vinilla_php self-update`\n";
     exit(1);
 }
 for ($i = 2; $i < $argc; $i++) {

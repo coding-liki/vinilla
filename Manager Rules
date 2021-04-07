@@ -26,7 +26,7 @@ Required fields are:
     repo_url
 
 If "name" is empty or equals "", then "module_name" sets to repository name:
-    for exampla, for repository 'https://github.com/Shiro7/mqtt_server_php.git' module_name will be "mqtt_server_php"
+    for example, for repository 'https://github.com/Shiro7/mqtt_server_php.git' module_name will be "mqtt_server_php"
 
 If "root_folder" is empty or equals "", then "root_folder" sets to "/"
 

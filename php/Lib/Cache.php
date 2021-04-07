@@ -76,7 +76,6 @@ class Cache{
             }
             foreach ($vendor as $key => $module) {
                 if(is_string($module)){
-                    echo "Is string\n";
                     $module = json_decode($module, true);
                 }
                 $new_module = new Module($module);
