@@ -57,12 +57,10 @@ class Cache{
 
         $last_cache_id = file_get_contents($cache_folder."/last_cache_id");
         
-        echo "lasst cache id = $last_cache_id\n";
         $gzdata = file_get_contents($cache_folder."/$last_cache_id");
     
         $uncompressed = gzuncompress($gzdata);
         $json = json_decode($uncompressed, true);
-        // print_r($json);
         $json['index'] = [];
         $id = 0;
         self::$modules = [];
@@ -71,7 +69,7 @@ class Cache{
         self::$urlIndex = [];
 
         foreach($json as $v_key => $vendor) { 
-            if($v_key == "index"){
+            if($v_key === "index"){
                 continue;
             }
             foreach ($vendor as $key => $module) {
@@ -88,7 +86,6 @@ class Cache{
             }
         }
 
-        // print_r(self::$modules);
         $cache_json = $json;
         return $json;
     }
