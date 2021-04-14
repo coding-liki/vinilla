@@ -11,7 +11,7 @@ require_once __DIR__ . "/include.php";
  * @param [type] $module_url
  * @return void
  */
-function installModule($module_url, $updating = false, $check_tmp = true, bool $onlyDebs = true)
+function installModule($module_url, $updating = false)
 {
 
     $module = Cache::$fullNameIndex[$module_url] ?? Cache::$urlIndex[$module_url] ??  new Module($module_url);
@@ -24,13 +24,13 @@ function installModule($module_url, $updating = false, $check_tmp = true, bool $
     /** Проверим зависимости */
     $dependencies = $module->getDependencies();
     foreach ($dependencies as $dependency) {
-        installModule($dependency, $updating, false);
+        installModule($dependency, $updating);
     }
 
     if ($module->isInstalled()) {
-        echo "Module `" . $module->getFullName() . "` is allredy installed\n";
+        echo "Module `" . $module->getFullName() . "` is already installed\n";
         $module->loadLocalVersion();
-        if ($module->local_version != $module->settings['version']) {
+        if ($module->local_version !== $module->settings['version']) {
             echo "Module `" . $module->getFullName() . "` can be updated\nRun 'vinilla_php update " . $module->getFullName() . "'\n";
         }
         return;
@@ -46,7 +46,7 @@ function installModule($module_url, $updating = false, $check_tmp = true, bool $
 
     if (is_dir("./$module->git_name")) {
         chdir($module->git_name);
-        $pull_result = exec("git pull");
+        exec("git pull");
     } else {
         gitFetchModule($module->url, TMP_DIR);
         chdir("./$module->git_name");
@@ -62,7 +62,7 @@ function installModule($module_url, $updating = false, $check_tmp = true, bool $
 
     $vendor = $module->vendor;
 
-    if ($vendor == "") {
+    if ($vendor === "") {
         echo "vendor is not set in module settings\n";
         exit(1);
     }
@@ -117,11 +117,11 @@ function printPackageInfo(){
     if(file_exists(SETTINGS_FILE)) {
         $settings = file_get_contents(SETTINGS_FILE);
         $module = new Module(json_decode($settings, true));
+        print_r($module->settings);
     } else {
         echo "Проинициализируйте проект!!!\n";
         echoHelp();
     }
-    print_r($module->settings);
 
     exit(0);
 }
@@ -129,7 +129,7 @@ function printPackageInfo(){
 function checkAndInstallDependencies(Module $module){
     $dependencies = $module->getDependencies();
     foreach ($dependencies as $dependency) {
-        installModule($dependency,false, false);
+        installModule($dependency);
     }
 }
 
@@ -193,20 +193,15 @@ function clearVendors()
 
 function selfUpdate()
 {
-    $interpretator = "php";
+    $interpreter = "php";
     $install_dir = str_replace("/php", "", __DIR__);
     chdir(TMP_DIR);
     gitFetchModule("https://github.com/coding-liki/vinilla.git", "./");
     chdir("vinilla");
-    exec("./install.sh -t $interpretator -f $install_dir");
-    echo "UPdated successfully";
+    exec("./install.sh -t $interpreter -f $install_dir");
+    echo "Updated successfully";
 }
-// $longopts  = array(
-//     "install",     // Обязательное значение
-//     "uninstall",
 
-// );
-// $options = getopt("", $longopts);
 checkTmpFolder();
 $command = "";
 $one_commands = [
@@ -232,7 +227,7 @@ function echoHelp()
     exit(1);
 }
 
-if ($argc < 3 && !in_array($command, $one_commands)) {
+if ($argc < 3 && !in_array($command, $one_commands, true)) {
     echoHelp();
 }
 for ($i = 2; $i < $argc; $i++) {
