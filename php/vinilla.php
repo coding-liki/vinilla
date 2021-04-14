@@ -101,7 +101,7 @@ function installModule($module_url, $updating = false, $check_tmp = true, bool $
         $dependencies = array_values(array_unique($dependencies));
         $project->setDependencies($dependencies);
         $settings = json_encode($project->settings);
-        file_put_contents(SETTINGS_FILE, $settings);
+        file_put_contents(SETTINGS_FILE, $settings, JSON_UNESCAPED_UNICODE);
         chdir($theCwd);
     } else if ($old_settings['version'] < $module->settings['version']) {
         echo "module can be updated\nPlease run \n**********************\nvinilla_php update $vendor/$install_module_name\n**********************\n";
@@ -110,6 +110,20 @@ function installModule($module_url, $updating = false, $check_tmp = true, bool $
     }
 
     chdir($cwd);
+}
+
+function printPackageInfo(){
+    chdir(CURRENT_WORKIN_DIR);
+    if(file_exists(SETTINGS_FILE)) {
+        $settings = file_get_contents(SETTINGS_FILE);
+        $module = new Module(json_decode($settings, true));
+    } else {
+        echo "Проинициализируйте проект!!!\n";
+        echoHelp();
+    }
+    print_r($module->settings);
+
+    exit(0);
 }
 
 function checkAndInstallDependencies(Module $module){
@@ -209,6 +223,7 @@ if ($argc > 1) {
 function echoHelp()
 {
     echo "Для установки зависимостей текущего проекта либо инициализации пустого файла конфигурации используйте `vinilla_php init`\n";
+    echo "Для вывода информации о текущем модуле используйте `vinilla_php print`\n";
     echo "Для установки модуля используйте `vinilla_php install MODULE_URL`\n";
     echo "Для удаления модуля используйте `vinilla_php uninstall MODULE_URL`\n";
     echo "Для обновления модуля используйте `vinilla_php update MODULE_URL`\n";
@@ -242,6 +257,9 @@ if ($argc < 3) {
     switch ($command) {
         case 'help':
             echoHelp();
+            break;
+        case 'print':
+            printPackageInfo();
             break;
         case "init":
             initialiseProject();
