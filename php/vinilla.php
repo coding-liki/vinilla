@@ -206,6 +206,7 @@ checkTmpFolder();
 $command = "";
 $one_commands = [
     'help',
+    'print',
     'init',
     'update',
     'load',
