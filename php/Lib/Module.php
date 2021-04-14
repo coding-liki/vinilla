@@ -112,7 +112,7 @@ class Module
 
     public function loadLocalVersion()
     {
-        if ($this->isInstalled() == MODULE_INSTALLED_AND_VINILLA) {
+        if ($this->isInstalled() === MODULE_INSTALLED_AND_VINILLA) {
             $cwd = getcwd();
             chdir(CURRENT_WORKIN_DIR);
             $local_settings = json_decode(file_get_contents("./vendor/" . $this->getFullName() . "/" . SETTINGS_FILE),

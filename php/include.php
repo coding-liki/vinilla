@@ -1,11 +1,11 @@
 <?php
 
-define("SETTINGS_FILE", "vinilla.json");
-define("TMP_DIR", "/tmp/vinilla_install_temp");
-define("SERVER_URL", "http://vinillaserver.vinylcoding.ru");
-define("MODULE_NOT_INSTALLED", 0);
-define("MODULE_INSTALLED_AND_VINILLA", 1);
-define("MODULE_INSTALLED_NOT_VINILLA", 2);
+const SETTINGS_FILE = "vinilla.json";
+const TMP_DIR = "/tmp/vinilla_install_temp";
+const SERVER_URL = "http://vinillaserver.vinylcoding.ru";
+const MODULE_NOT_INSTALLED = 0;
+const MODULE_INSTALLED_AND_VINILLA = 1;
+const MODULE_INSTALLED_NOT_VINILLA = 2;
 define("CURRENT_WORKIN_DIR", getcwd());
 
 ini_set('display_errors', 1);
@@ -13,16 +13,20 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 // copies files and non-empty directories
 function rcopy($src, $dst) {
-    if (file_exists($dst)) rrmdir($dst);
+    if (file_exists($dst)) {
+        rrmdir($dst);
+    }
     if (is_dir($src)) {
         if (!mkdir($dst) && !is_dir($dst)) {
-            throw new \RuntimeException(sprintf('Directory "%s" was not created', $dst));
+            throw new RuntimeException(sprintf('Directory "%s" was not created', $dst));
         }
         $files = scandir($src);
         foreach ($files as $file)
-        if ($file != "." && $file != "..") rcopy("$src/$file", "$dst/$file");
+        if ($file !== "." && $file !== "..") rcopy("$src/$file", "$dst/$file");
     }
-    else if (file_exists($src)) copy($src, $dst);
+    else if (file_exists($src)) {
+        copy($src, $dst);
+    }
 }
 
 
@@ -34,21 +38,14 @@ function rcopy($src, $dst) {
 function recursive_copy($src,$dst) {
 	$dir = opendir($src);
     if (!@mkdir($dst) && !is_dir($dst)) {
-        throw new \RuntimeException(sprintf('Directory "%s" was not created', $dst));
+        throw new RuntimeException(sprintf('Directory "%s" was not created', $dst));
     }
 	while(( $file = readdir($dir)) ) {
-		if (( $file != '.' ) && ( $file != '..' )) {
+		if (( $file !== '.' ) && ( $file !== '..' )) {
 			if ( is_dir($src . '/' . $file) ) {
-                //$this->recursive_copy($src .'/'. $file, $dst .'/'. $file);
                 recursive_copy($src .'/'. $file, $dst .'/'. $file);
 			}
 			else {
-                if (strpos($src .'/'. $file, '.git') === FALSE) {
-                    // echo $src .'/'. $file;
-                    // echo " to ";
-                    // echo $dst .'/'. $file."\n";
-                }
-
 				copy($src .'/'. $file,$dst .'/'. $file);
 			}
 		}
@@ -58,7 +55,6 @@ function recursive_copy($src,$dst) {
 
 
 function deleteDir($src) {
-    // $dir_root =
     $dir_path = explode("/", $src);
     if(!in_array($dir_path[1], ["tmp", "vendor"]) && !in_array($dir_path[0], ["tmp", "vendor"])){
         echo "trying to delete not tmp folder `$src`\n";
@@ -66,7 +62,7 @@ function deleteDir($src) {
     }
     $dir = opendir($src);
     while(false !== ( $file = readdir($dir)) ) {
-        if (( $file != '.' ) && ( $file != '..' )) {
+        if (( $file !== '.' ) && ( $file !== '..' )) {
             if ( is_dir($src . '/' . $file) ) {
                 deleteDir($src . '/' . $file);
             }
@@ -83,7 +79,7 @@ function deleteDir($src) {
 function checkCreateFolder($folder, $mode = 0777){
     if(!is_dir($folder)){
         if (!@mkdir($folder, $mode, true) && !is_dir($folder)) {
-            throw new \RuntimeException(sprintf('Directory "%s" was not created', $folder));
+            throw new RuntimeException(sprintf('Directory "%s" was not created', $folder));
         }
         return false;
     }
@@ -146,14 +142,13 @@ function guessModuleUrl($module_url){
     $module_name_mass = explode("/", $module_url);
 
 
-    if(count($module_name_mass) == 2){
-        $vendor = $module_name_mass[0];
-        $module_name = $module_name_mass[1];
-        if(isset($cache[$vendor]) && isset($cache[$vendor][$module_name]) && isset($cache[$vendor][$module_name]['repo_url'])){
-            return $cache[$vendor][$module_name]['repo_url'];
-        }
-        return "";
+    if(count($module_name_mass) === 2){
+        list($vendor, $module_name) = $module_name_mass;
+
+        return $cache[$vendor][$module_name]['repo_url'] ?? "";
     }
+
+    return "";
 }
 require_once __DIR__."/Lib/Script.php";
 require_once __DIR__."/Lib/Module.php";
