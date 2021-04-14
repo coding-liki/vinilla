@@ -82,7 +82,7 @@ function deleteDir($src) {
 
 function checkCreateFolder($folder, $mode = 0777){
     if(!is_dir($folder)){
-        if (!mkdir($folder, $mode, true) && !is_dir($folder)) {
+        if (!@mkdir($folder, $mode, true) && !is_dir($folder)) {
             throw new \RuntimeException(sprintf('Directory "%s" was not created', $folder));
         }
         return false;
