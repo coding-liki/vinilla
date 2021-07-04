@@ -86,6 +86,8 @@ class Module
     public function runScripts()
     {
         foreach ($this->scripts as $script) {
+            echo "run script \n";
+            print_r($script);
             $script_o = new Script($this->getFullName(), $script['name'], $script['type'] ?? "php");
             $script_o->run();
         }
