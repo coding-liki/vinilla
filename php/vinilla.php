@@ -180,7 +180,7 @@ function initialiseProject()
         echo "Введите адрес репозитория для проекта: ";
         $settings['repo_url'] = readline();
 
-        file_put_contents(SETTINGS_FILE, json_encode($settings));
+        file_put_contents(SETTINGS_FILE, json_encode($settings, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE));
     }
 }
 
