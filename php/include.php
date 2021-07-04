@@ -83,7 +83,7 @@ function patchCanBeDeleted(string $src): bool
 {
     $dir_path = explode("/", $src);
 
-    $availableStarting = ["tmp", "vendor", CURRENT_WORKIN_DIR];
+    $availableStarting = ["tmp", "vendor", basename(CURRENT_WORKIN_DIR)];
 
     return !in_array($dir_path[1], $availableStarting, true)
         && !in_array($dir_path[0], $availableStarting, true);
