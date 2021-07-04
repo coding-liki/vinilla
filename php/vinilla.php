@@ -92,16 +92,8 @@ function installModule($module_url, $updating = false)
         recursive_copy(TMP_DIR . "/$module_name", "$vendor_dir/$install_module_name");
         echo "copy complete!\n\n";
         $module->runScripts();
-        $theCwd = getcwd();
-        chdir($current_working_dir);
-        $settings = file_get_contents(SETTINGS_FILE);
-        $project = new Module(json_decode($settings, true));
-        $dependencies = $project->getDependencies();
-        $dependencies[] = $module->getFullName();
-        $dependencies = array_values(array_unique($dependencies));
-        $project->setDependencies($dependencies);
-        saveSettings($project->settings);
-        chdir($theCwd);
+
+        updateProjectDependencies($current_working_dir, [$module->getFullName()]);
     } else if ($old_settings['version'] < $module->settings['version']) {
         echo "module can be updated\nPlease run \n**********************\nvinilla_php update $vendor/$install_module_name\n**********************\n";
     } else {
@@ -109,6 +101,28 @@ function installModule($module_url, $updating = false)
     }
 
     chdir($cwd);
+}
+
+/**
+ * @param string $current_working_dir
+ * @param array $addDependencies
+ * @param array $removeDependencies
+ */
+function updateProjectDependencies(string $current_working_dir,array $addDependencies = [], array $removeDependencies = [])
+{
+    $theCwd = getcwd();
+    chdir($current_working_dir);
+    $settings = file_get_contents(SETTINGS_FILE);
+    $project = new Module(json_decode($settings, true));
+    $dependencies = $project->getDependencies();
+    if(!empty($addDependencies)) {
+        array_push($dependencies, ...$addDependencies);
+    }
+
+    $dependencies = array_values(array_unique(array_diff($removeDependencies,$dependencies)));
+    $project->setDependencies($dependencies);
+    saveSettings($project->settings);
+    chdir($theCwd);
 }
 
 function printPackageInfo(){
@@ -139,6 +153,10 @@ function uninstallModule($module_name)
     echo $module->getFullName() . " uninstalling\n";
     if ($module->isInstalled()) {
         deleteDir("./vendor/" . $module->getFullName());
+        $current_working_dir = CURRENT_WORKIN_DIR;
+
+        updateProjectDependencies($current_working_dir, [],[$module->getFullName()]);
+
     } else {
         echo "module is not installed!!!\nPlease run \n**********************\nvinilla_php install " . $module->getFullName() . "\n**********************\n";
     }
