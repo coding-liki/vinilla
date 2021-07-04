@@ -100,8 +100,7 @@ function installModule($module_url, $updating = false)
         $dependencies[] = $module->getFullName();
         $dependencies = array_values(array_unique($dependencies));
         $project->setDependencies($dependencies);
-        $settings = json_encode($project->settings);
-        file_put_contents(SETTINGS_FILE, $settings, JSON_UNESCAPED_UNICODE);
+        saveSettings($project->settings);
         chdir($theCwd);
     } else if ($old_settings['version'] < $module->settings['version']) {
         echo "module can be updated\nPlease run \n**********************\nvinilla_php update $vendor/$install_module_name\n**********************\n";
@@ -179,9 +178,12 @@ function initialiseProject()
         $settings['description'] = readline();
         echo "Введите адрес репозитория для проекта: ";
         $settings['repo_url'] = readline();
-
-        file_put_contents(SETTINGS_FILE, json_encode($settings, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE));
+        saveSettings($settings);
     }
+}
+
+function saveSettings(array $settings){
+    file_put_contents(SETTINGS_FILE, json_encode($settings, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE));
 }
 
 function clearVendors()
