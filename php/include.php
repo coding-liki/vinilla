@@ -55,9 +55,8 @@ function recursive_copy($src,$dst) {
 
 
 function deleteDir($src) {
-    $dir_path = explode("/", $src);
-    if(!in_array($dir_path[1], ["tmp", "vendor"]) && !in_array($dir_path[0], ["tmp", "vendor"])){
-        echo "trying to delete not tmp folder `$src`\n";
+    if(patchCanBeDeleted($src)){
+        echo "trying to delete not project and not tmp folder `$src`\n";
         exit(1);
     }
     $dir = opendir($src);
@@ -74,6 +73,20 @@ function deleteDir($src) {
     closedir($dir);
     rmdir($src);
 
+}
+
+/**
+ * @param string $src
+ * @return bool
+ */
+function patchCanBeDeleted(string $src): bool
+{
+    $dir_path = explode("/", $src);
+
+    $availableStarting = ["tmp", "vendor", CURRENT_WORKIN_DIR];
+
+    return !in_array($dir_path[1], $availableStarting, true)
+        && !in_array($dir_path[0], $availableStarting, true);
 }
 
 function checkCreateFolder($folder, $mode = 0777){
