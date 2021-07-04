@@ -119,7 +119,7 @@ function updateProjectDependencies(string $current_working_dir,array $addDepende
         array_push($dependencies, ...$addDependencies);
     }
 
-    $dependencies = array_values(array_unique(array_diff($removeDependencies,$dependencies)));
+    $dependencies = array_values(array_unique(array_diff($dependencies, $removeDependencies)));
     $project->setDependencies($dependencies);
     saveSettings($project->settings);
     chdir($theCwd);
