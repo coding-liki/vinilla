@@ -172,6 +172,10 @@ function initialiseProject()
         $settings = [];
         echo "Введите название проекта: ";
         $settings['name'] = readline();
+        if(empty($settings['name'])){
+            $settings['name'] = basename(CURRENT_WORKIN_DIR);
+            echo sprintf("Название проекта выбрано на основание текущей папки проекта - %s\n", $settings['name']);
+        }
         echo "Введите вендора проекта: ";
         $settings['vendor'] = readline();
         echo "Введите описание проекта: ";
