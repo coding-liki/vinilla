@@ -85,6 +85,7 @@ class Module
 
     public function runScripts()
     {
+        print_r($this->scripts);
         foreach ($this->scripts as $script) {
             echo "run script \n";
             print_r($script);
