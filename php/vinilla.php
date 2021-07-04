@@ -183,7 +183,7 @@ function initialiseProject()
 }
 
 function saveSettings(array $settings){
-    file_put_contents(SETTINGS_FILE, json_encode($settings, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE));
+    file_put_contents(SETTINGS_FILE, json_encode($settings, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES));
 }
 
 function clearVendors()
