@@ -52,7 +52,7 @@ class Cache{
         }
         $cache_folder = __DIR__."/../cache";
         if(!file_exists($cache_folder."/last_cache_id")){
-            throw new RuntimeException("Обновите кэш");
+            self::updateCache();
         }
 
         $last_cache_id = file_get_contents($cache_folder."/last_cache_id");
