@@ -2,7 +2,7 @@
 
 const SETTINGS_FILE = "vinilla.json";
 const TMP_DIR = "/tmp/vinilla_install_temp";
-const SERVER_URL = "http://vinillaserver.vinylcoding.ru";
+const SERVER_URL = "vinillaserver.vinylcoding.ru";
 const MODULE_NOT_INSTALLED = 0;
 const MODULE_INSTALLED_AND_VINILLA = 1;
 const MODULE_INSTALLED_NOT_VINILLA = 2;

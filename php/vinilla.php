@@ -1,20 +1,18 @@
 <?php
 
-
 require_once __DIR__ . "/include.php";
-
-
 
 /**
  * Устанавливаем модуль с помощью git
  *
  * @param [type] $module_url
+ *
  * @return void
  */
 function installModule($module_url, $updating = false)
 {
 
-    $module = Cache::$fullNameIndex[$module_url] ?? Cache::$urlIndex[$module_url] ??  new Module($module_url);
+    $module = Cache::$fullNameIndex[$module_url] ?? Cache::$urlIndex[$module_url] ?? new Module($module_url);
 
     if (!$module->initialised) {
         echo "Module is not known!\nTry to update Cache\n vinilla_php update\n";
@@ -33,13 +31,13 @@ function installModule($module_url, $updating = false)
         if ($module->local_version !== $module->settings['version']) {
             echo "Module `" . $module->getFullName() . "` can be updated\nRun 'vinilla_php update " . $module->getFullName() . "'\n";
         }
+
         return;
     }
 
     echo "Installing `" . $module->getFullName() . "`\n";
 
     $current_working_dir = CURRENT_WORKIN_DIR;
-
 
     $cwd = getcwd();
     chdir(TMP_DIR);
@@ -52,13 +50,10 @@ function installModule($module_url, $updating = false)
         chdir("./$module->git_name");
     }
 
-
-
     if (!is_file("./" . SETTINGS_FILE)) {
         echo "Not Vinilla module\n";
         exit(1);
     }
-
 
     $vendor = $module->vendor;
 
@@ -105,17 +100,17 @@ function installModule($module_url, $updating = false)
 
 /**
  * @param string $current_working_dir
- * @param array $addDependencies
- * @param array $removeDependencies
+ * @param array  $addDependencies
+ * @param array  $removeDependencies
  */
-function updateProjectDependencies(string $current_working_dir,array $addDependencies = [], array $removeDependencies = [])
+function updateProjectDependencies(string $current_working_dir, array $addDependencies = [], array $removeDependencies = [])
 {
     $theCwd = getcwd();
     chdir($current_working_dir);
-    $settings = file_get_contents(SETTINGS_FILE);
-    $project = new Module(json_decode($settings, true));
+    $settings     = file_get_contents(SETTINGS_FILE);
+    $project      = new Module(json_decode($settings, true));
     $dependencies = $project->getDependencies();
-    if(!empty($addDependencies)) {
+    if (!empty($addDependencies)) {
         array_push($dependencies, ...$addDependencies);
     }
 
@@ -125,11 +120,12 @@ function updateProjectDependencies(string $current_working_dir,array $addDepende
     chdir($theCwd);
 }
 
-function printPackageInfo(){
+function printPackageInfo()
+{
     chdir(CURRENT_WORKIN_DIR);
-    if(file_exists(SETTINGS_FILE)) {
+    if (file_exists(SETTINGS_FILE)) {
         $settings = file_get_contents(SETTINGS_FILE);
-        $module = new Module(json_decode($settings, true));
+        $module   = new Module(json_decode($settings, true));
         print_r($module->settings);
     } else {
         echo "Проинициализируйте проект!!!\n";
@@ -139,7 +135,8 @@ function printPackageInfo(){
     exit(0);
 }
 
-function checkAndInstallDependencies(Module $module){
+function checkAndInstallDependencies(Module $module)
+{
     $dependencies = $module->getDependencies();
     foreach ($dependencies as $dependency) {
         installModule($dependency);
@@ -149,14 +146,13 @@ function checkAndInstallDependencies(Module $module){
 function uninstallModule($module_name)
 {
     checkRootPath();
-    $module = Cache::$fullNameIndex[$module_name] ?? Cache::$urlIndex[$module_name] ??  new Module($module_name);
+    $module = Cache::$fullNameIndex[$module_name] ?? Cache::$urlIndex[$module_name] ?? new Module($module_name);
     echo $module->getFullName() . " uninstalling\n";
     if ($module->isInstalled()) {
         deleteDir("./vendor/" . $module->getFullName());
         $current_working_dir = CURRENT_WORKIN_DIR;
 
-        updateProjectDependencies($current_working_dir, [],[$module->getFullName()]);
-
+        updateProjectDependencies($current_working_dir, [], [$module->getFullName()]);
     } else {
         echo "module is not installed!!!\nPlease run \n**********************\nvinilla_php install " . $module->getFullName() . "\n**********************\n";
     }
@@ -165,7 +161,7 @@ function uninstallModule($module_name)
 function updateModule($module_name)
 {
     checkRootPath();
-    $module = Cache::$fullNameIndex[$module_name] ?? Cache::$urlIndex[$module_name] ??  new Module($module_name);
+    $module = Cache::$fullNameIndex[$module_name] ?? Cache::$urlIndex[$module_name] ?? new Module($module_name);
     if ($module->isInstalled()) {
         if (is_file("./vendor/" . $module->getFullName() . "/" . SETTINGS_FILE)) {
             chdir("./vendor/" . $module->getFullName());
@@ -182,15 +178,16 @@ function initialiseProject()
 {
     chdir(CURRENT_WORKIN_DIR);
     echo "\nstartInit\n";
-    if(file_exists(SETTINGS_FILE)){
+    if (file_exists(SETTINGS_FILE)) {
         $settings = file_get_contents(SETTINGS_FILE);
-        $module = new Module(json_decode($settings, true));
+        $module   = new Module(json_decode($settings, true));
         checkAndInstallDependencies($module);
+        runPostInstallDependencyScripts($module);
     } else {
         $settings = [];
         echo "Введите название проекта: ";
         $settings['name'] = readline();
-        if(empty($settings['name'])){
+        if (empty($settings['name'])) {
             $settings['name'] = basename(CURRENT_WORKIN_DIR);
             echo sprintf("Название проекта выбрано на основание текущей папки проекта - %s\n", $settings['name']);
         }
@@ -204,8 +201,22 @@ function initialiseProject()
     }
 }
 
-function saveSettings(array $settings){
-    file_put_contents(SETTINGS_FILE, json_encode($settings, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES));
+function runPostInstallDependencyScripts(Module $module)
+{
+    foreach ($module->getDependencies() as $dependency) {
+        $moduleDependency = new Module($dependency);
+        if (isset($moduleDependency->settings['after_full_install_script'])) {
+            $scriptPath = CURRENT_WORKIN_DIR . "/vendor/" . $dependency . '/' . $moduleDependency->settings['after_full_install_script'];
+            if (str_ends_with($scriptPath, '.php')) {
+                include_once $scriptPath;
+            }
+        }
+    }
+}
+
+function saveSettings(array $settings)
+{
+    file_put_contents(SETTINGS_FILE, json_encode($settings, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
 }
 
 function clearVendors()
@@ -213,7 +224,6 @@ function clearVendors()
     deleteDir("./vendor");
     echo "Deleting all vendors\n";
 }
-
 
 function selfUpdate()
 {
@@ -227,7 +237,7 @@ function selfUpdate()
 }
 
 checkTmpFolder();
-$command = "";
+$command      = "";
 $one_commands = [
     'help',
     'print',
