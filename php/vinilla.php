@@ -100,15 +100,15 @@ function installModule($module_url, $updating = false)
 
 /**
  * @param string $current_working_dir
- * @param array  $addDependencies
- * @param array  $removeDependencies
+ * @param array $addDependencies
+ * @param array $removeDependencies
  */
 function updateProjectDependencies(string $current_working_dir, array $addDependencies = [], array $removeDependencies = [])
 {
     $theCwd = getcwd();
     chdir($current_working_dir);
-    $settings     = file_get_contents(SETTINGS_FILE);
-    $project      = new Module(json_decode($settings, true));
+    $settings = file_get_contents(SETTINGS_FILE);
+    $project = new Module(json_decode($settings, true));
     $dependencies = $project->getDependencies();
     if (!empty($addDependencies)) {
         array_push($dependencies, ...$addDependencies);
@@ -125,7 +125,7 @@ function printPackageInfo()
     chdir(CURRENT_WORKIN_DIR);
     if (file_exists(SETTINGS_FILE)) {
         $settings = file_get_contents(SETTINGS_FILE);
-        $module   = new Module(json_decode($settings, true));
+        $module = new Module(json_decode($settings, true));
         print_r($module->settings);
     } else {
         echo "Проинициализируйте проект!!!\n";
@@ -180,7 +180,7 @@ function initialiseProject()
     echo "\nstartInit\n";
     if (file_exists(SETTINGS_FILE)) {
         $settings = file_get_contents(SETTINGS_FILE);
-        $module   = new Module(json_decode($settings, true));
+        $module = new Module(json_decode($settings, true));
         checkAndInstallDependencies($module);
         runPostInstallDependencyScripts($module);
     } else {
@@ -237,7 +237,7 @@ function selfUpdate()
 }
 
 checkTmpFolder();
-$command      = "";
+$command = "";
 $one_commands = [
     'help',
     'print',
@@ -245,8 +245,10 @@ $one_commands = [
     'update',
     'load',
     'clear',
-    "self-update"
+    "self-update",
+    'upgrade',
 ];
+
 if ($argc > 1) {
     $command = $argv[1];
 }
@@ -257,6 +259,7 @@ function echoHelp()
     echo "Для установки модуля используйте `vinilla_php install MODULE_URL`\n";
     echo "Для удаления модуля используйте `vinilla_php uninstall MODULE_URL`\n";
     echo "Для обновления модуля используйте `vinilla_php update MODULE_URL`\n";
+    echo "Для обновления всех модулей используйте `vinilla_php upgrade`\n";
     echo "Для обновления кэша используйте `vinilla_php update`\n";
     echo "Для обновления Vinilla Packet Manager используйте `vinilla_php self-update`\n";
     exit(1);
@@ -283,6 +286,22 @@ for ($i = 2; $i < $argc; $i++) {
             echo "Используй либо install либо uninstall либо update";
     }
 }
+function upgrade()
+{
+    chdir(CURRENT_WORKIN_DIR);
+    echo "\nstartUpgrade\n";
+    if (file_exists(SETTINGS_FILE)) {
+        $settings = file_get_contents(SETTINGS_FILE);
+        $module = new Module(json_decode($settings, true));
+        $dependencies = $module->getDependencies();
+        foreach ($dependencies as $dependency) {
+            updateModule($dependency);
+        }
+
+        runPostInstallDependencyScripts($module);
+    }
+}
+
 if ($argc < 3) {
     switch ($command) {
         case 'help':
@@ -306,6 +325,8 @@ if ($argc < 3) {
         case "load":
             Cache::loadCache();
             break;
+        case 'upgrade':
+            upgrade();
     }
 }
 // print_r($options);
