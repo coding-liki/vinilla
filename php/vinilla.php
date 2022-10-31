@@ -204,7 +204,7 @@ function initialiseProject()
 function runPostInstallDependencyScripts(Module $module)
 {
     foreach ($module->getDependencies() as $dependency) {
-        $moduleDependency = new Module($dependency);
+        $moduleDependency = Cache::$fullNameIndex[$dependency] ?? Cache::$urlIndex[$dependency] ?? new Module($dependency);
         if (isset($moduleDependency->settings['after_full_install_script'])) {
             $scriptPath = CURRENT_WORKIN_DIR . "/vendor/" . $dependency . '/' . $moduleDependency->settings['after_full_install_script'];
             if (str_ends_with($scriptPath, '.php')) {
