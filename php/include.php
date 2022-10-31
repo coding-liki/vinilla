@@ -134,6 +134,7 @@ function gitFetchModule($module_url, $folder){
     }
     $output = "";
     $clone_result = 0;
+    $module_url = guessModuleUrl($module_url);
     exec("git clone $module_url &>/dev/null", $output, $clone_result);
     if($clone_result != 0){
         echo "Fetching error\n";
