@@ -348,11 +348,12 @@ for ($i = 2; $i < $argc; $i++) {
             Cache::updateCache();
             break;
         default:
+            echo "Try execute $command\n";
             tryExecute($command, $argv);
             $break = true;
     }
     if ($break) {
-        break;
+        exit(0);
     }
 }
 
