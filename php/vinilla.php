@@ -236,6 +236,7 @@ function updateBinsSettings(Module $module): array
         return $bins;
     }
 
+    checkCreateFolder(BINS_FOLDER);
     file_put_contents(BINS_FOLDER . BINS_JSON_FILE_NAME, json_encode($bins));
 
     return [];
