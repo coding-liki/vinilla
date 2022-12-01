@@ -306,9 +306,7 @@ function echoHelp()
     exit(1);
 }
 
-if ($argc < 3 && !in_array($command, $one_commands, true)) {
-    echoHelp();
-}
+
 
 function tryExecute(string $command, array $arguments)
 {
@@ -325,7 +323,7 @@ function tryExecute(string $command, array $arguments)
         }
         $commandConfig = $binsConfiguration[$command];
 
-        $resultCommand = $commandConfig['path'] . " " . implode(" ", $commandConfig['prefix']);
+        $resultCommand = $commandConfig['path'] . " " . implode(" ", $commandConfig['prefix'] ?? []);
 
         system($resultCommand . " " . implode(" ", $arguments), $code);
         if ($code !== 0) {
@@ -358,6 +356,10 @@ for ($i = 2; $i < $argc; $i++) {
     if ($break) {
         break;
     }
+}
+
+if ($argc < 3 && !in_array($command, $one_commands, true)) {
+    echoHelp();
 }
 function upgrade()
 {
