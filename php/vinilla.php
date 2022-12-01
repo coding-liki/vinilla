@@ -324,6 +324,7 @@ function tryExecute(string $command, array $arguments)
         $resultCommand = $commandConfig['path'] . " " . implode(" ", $commandConfig['prefix'] ?? []);
         array_shift($arguments);
         array_shift($arguments);
+        chdir(CURRENT_WORKING_DIR);
         system($resultCommand . " " . implode(" ", $arguments), $code);
         if ($code !== 0) {
             throw new RuntimeException("Result code is $code");
