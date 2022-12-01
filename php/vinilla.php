@@ -332,7 +332,7 @@ function tryExecute(string $command, array $arguments)
     }
 }
 
-for ($i = 2; $i < $argc; $i++) {
+for ($i = 2; $i <= $argc; $i++) {
     $break = false;
     switch ($command) {
         case "install":
