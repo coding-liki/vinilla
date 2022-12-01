@@ -352,8 +352,10 @@ for ($i = 2; $i <= $argc; $i++) {
             Cache::updateCache();
             break;
         default:
-            tryExecute($command, $argv);
-            $break = true;
+            if(!in_array($command, $one_commands, true)){
+                tryExecute($command, $argv);
+                $break = true;
+            }
     }
     if ($break) {
         exit(0);
