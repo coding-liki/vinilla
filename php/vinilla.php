@@ -322,7 +322,8 @@ function tryExecute(string $command, array $arguments)
         $commandConfig = $binsConfiguration[$command];
 
         $resultCommand = $commandConfig['path'] . " " . implode(" ", $commandConfig['prefix'] ?? []);
-
+        array_shift($arguments);
+        array_shift($arguments);
         system($resultCommand . " " . implode(" ", $arguments), $code);
         if ($code !== 0) {
             throw new RuntimeException("Result code is $code");
@@ -336,19 +337,21 @@ for ($i = 2; $i <= $argc; $i++) {
     $break = false;
     switch ($command) {
         case "install":
+            if($i<$argc)
             installModule($argv[$i]);
             break;
         case "uninstall":
-            uninstallModule($argv[$i]);
+            if($i<$argc)
+                uninstallModule($argv[$i]);
             break;
         case "update":
-            updateModule($argv[$i]);
+            if($i<$argc)
+                updateModule($argv[$i]);
             break;
         case "getcache":
             Cache::updateCache();
             break;
         default:
-            echo "Try execute $command\n";
             tryExecute($command, $argv);
             $break = true;
     }
