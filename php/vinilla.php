@@ -189,7 +189,7 @@ function initialiseProject()
         $settings = file_get_contents(SETTINGS_FILE);
         print_r($settings);
         var_dump(json_decode($settings, true));
-        $module = new Module(json_decode($settings, true, JSON_THROW_ON_ERROR));
+        $module = new Module(json_decode($settings, true, 512, JSON_THROW_ON_ERROR));
         checkAndInstallDependencies($module);
         postInstallProcess();
     } else {
