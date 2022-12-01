@@ -99,7 +99,7 @@ function installModule($module_url, $updating = false)
     } else {
         echo "You have the newest version of $vendor/$install_module_name\n";
     }
-    if($depth === 1){
+    if ($depth === 1) {
         postInstallProcess();
     }
     chdir($cwd);
@@ -210,7 +210,8 @@ function initialiseProject()
     }
 }
 
-function postInstallProcess(){
+function postInstallProcess()
+{
     chdir(CURRENT_WORKING_DIR);
     $settings = file_get_contents(SETTINGS_FILE);
     $rootModule = new Module(json_decode($settings, true));
@@ -223,17 +224,19 @@ function updateBinsSettings(Module $module): array
     static $depth = 0;
     $depth++;
 
+    $currentDepth = $depth;
+
     $bins = $module->bins;
-    foreach ($module->getDependencies() as $dependency){
+    foreach ($module->getDependencies() as $dependency) {
         $moduleDependency = Cache::$fullNameIndex[$dependency] ?? Cache::$urlIndex[$dependency] ?? new Module($dependency);
         $bins += updateBinsSettings($moduleDependency);
     }
 
-    if($depth > 1){
+    if ($currentDepth > 1) {
         return $bins;
     }
 
-    file_put_contents(BINS_FOLDER.BINS_JSON_FILE_NAME, json_encode($bins));
+    file_put_contents(BINS_FOLDER . BINS_JSON_FILE_NAME, json_encode($bins));
 
     return [];
 }
