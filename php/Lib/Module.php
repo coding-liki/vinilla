@@ -20,6 +20,8 @@ class Module
             return;
         }
 
+        print_r($settings);
+
         $this->parseSettings($settings);
 
         $git_module_name = explode("/", $this->url);
