@@ -2,6 +2,10 @@
 
 require_once __DIR__ . "/include.php";
 
+const BINS_FOLDER = CURRENT_WORKING_DIR . "/vendor/.bin/";
+
+const BINS_JSON_FILE_NAME = "bins.json";
+
 /**
  * Устанавливаем модуль с помощью git
  *
@@ -11,7 +15,8 @@ require_once __DIR__ . "/include.php";
  */
 function installModule($module_url, $updating = false)
 {
-
+    static $depth = 0;
+    $depth++;
     $module = Cache::$fullNameIndex[$module_url] ?? Cache::$urlIndex[$module_url] ?? new Module($module_url);
 
     if (!$module->initialised) {
@@ -37,7 +42,7 @@ function installModule($module_url, $updating = false)
 
     echo "Installing `" . $module->getFullName() . "`\n";
 
-    $current_working_dir = CURRENT_WORKIN_DIR;
+    $current_working_dir = CURRENT_WORKING_DIR;
 
     $cwd = getcwd();
     chdir(TMP_DIR);
@@ -64,7 +69,7 @@ function installModule($module_url, $updating = false)
 
     $install_module_name = $module->name;
 
-    $vendor_dir = checkVendorFolder($vendor, CURRENT_WORKIN_DIR);
+    $vendor_dir = checkVendorFolder($vendor, CURRENT_WORKING_DIR);
 
     chdir($vendor_dir);
 
@@ -94,7 +99,9 @@ function installModule($module_url, $updating = false)
     } else {
         echo "You have the newest version of $vendor/$install_module_name\n";
     }
-
+    if($depth === 1){
+        postInstallProcess();
+    }
     chdir($cwd);
 }
 
@@ -122,7 +129,7 @@ function updateProjectDependencies(string $current_working_dir, array $addDepend
 
 function printPackageInfo()
 {
-    chdir(CURRENT_WORKIN_DIR);
+    chdir(CURRENT_WORKING_DIR);
     if (file_exists(SETTINGS_FILE)) {
         $settings = file_get_contents(SETTINGS_FILE);
         $module = new Module(json_decode($settings, true));
@@ -150,7 +157,7 @@ function uninstallModule($module_name)
     echo $module->getFullName() . " uninstalling\n";
     if ($module->isInstalled()) {
         deleteDir("./vendor/" . $module->getFullName());
-        $current_working_dir = CURRENT_WORKIN_DIR;
+        $current_working_dir = CURRENT_WORKING_DIR;
 
         updateProjectDependencies($current_working_dir, [], [$module->getFullName()]);
     } else {
@@ -176,19 +183,19 @@ function updateModule($module_name)
 
 function initialiseProject()
 {
-    chdir(CURRENT_WORKIN_DIR);
+    chdir(CURRENT_WORKING_DIR);
     echo "\nstartInit\n";
     if (file_exists(SETTINGS_FILE)) {
         $settings = file_get_contents(SETTINGS_FILE);
         $module = new Module(json_decode($settings, true));
         checkAndInstallDependencies($module);
-        runPostInstallDependencyScripts($module);
+        postInstallProcess();
     } else {
         $settings = [];
         echo "Введите название проекта: ";
         $settings['name'] = readline();
         if (empty($settings['name'])) {
-            $settings['name'] = basename(CURRENT_WORKIN_DIR);
+            $settings['name'] = basename(CURRENT_WORKING_DIR);
             echo sprintf("Название проекта выбрано на основание текущей папки проекта - %s\n", $settings['name']);
         }
         echo "Введите вендора проекта: ";
@@ -201,12 +208,40 @@ function initialiseProject()
     }
 }
 
+function postInstallProcess(){
+    chdir(CURRENT_WORKING_DIR);
+    $settings = file_get_contents(SETTINGS_FILE);
+    $rootModule = new Module(json_decode($settings, true));
+    runPostInstallDependencyScripts($rootModule);
+    updateBinsSettings($rootModule);
+}
+
+function updateBinsSettings(Module $module): array
+{
+    static $depth = 0;
+    $depth++;
+
+    $bins = $module->bins;
+    foreach ($module->getDependencies() as $dependency){
+        $moduleDependency = Cache::$fullNameIndex[$dependency] ?? Cache::$urlIndex[$dependency] ?? new Module($dependency);
+        $bins += updateBinsSettings($moduleDependency);
+    }
+
+    if($depth > 1){
+        return $bins;
+    }
+
+    file_put_contents(BINS_FOLDER.BINS_JSON_FILE_NAME, json_encode($bins));
+
+    return [];
+}
+
 function runPostInstallDependencyScripts(Module $module)
 {
     foreach ($module->getDependencies() as $dependency) {
         $moduleDependency = Cache::$fullNameIndex[$dependency] ?? Cache::$urlIndex[$dependency] ?? new Module($dependency);
         if (isset($moduleDependency->settings['after_full_install_script'])) {
-            $scriptPath = CURRENT_WORKIN_DIR . "/vendor/" . $dependency . '/' . $moduleDependency->settings['after_full_install_script'];
+            $scriptPath = CURRENT_WORKING_DIR . "/vendor/" . $dependency . '/' . $moduleDependency->settings['after_full_install_script'];
             if (str_ends_with($scriptPath, '.php')) {
                 include_once $scriptPath;
             }
@@ -268,7 +303,35 @@ function echoHelp()
 if ($argc < 3 && !in_array($command, $one_commands, true)) {
     echoHelp();
 }
+
+function tryExecute(string $command, array $arguments)
+{
+    $binFolder = BINS_FOLDER;
+
+    checkCreateFolder($binFolder);
+
+    chdir($binFolder);
+
+    try {
+        $binsConfiguration = json_decode(file_get_contents(BINS_JSON_FILE_NAME), true);
+        if (!isset($binsConfiguration[$command])) {
+            throw new RuntimeException("No execute configuration\n");
+        }
+        $commandConfig = $binsConfiguration[$command];
+
+        $resultCommand = $commandConfig['path'] . " " . implode(" ", $commandConfig['prefix']);
+
+        system($resultCommand . " " . implode(" ", $arguments), $code);
+        if ($code !== 0) {
+            throw new RuntimeException("Result code is $code");
+        }
+    } catch (Throwable $t) {
+        echo "Can not execute $command\n $t\n";
+    }
+}
+
 for ($i = 2; $i < $argc; $i++) {
+    $break = false;
     switch ($command) {
         case "install":
             installModule($argv[$i]);
@@ -283,12 +346,16 @@ for ($i = 2; $i < $argc; $i++) {
             Cache::updateCache();
             break;
         default:
-            echo "Используй либо install либо uninstall либо update";
+            tryExecute($command, $argv);
+            $break = true;
+    }
+    if ($break) {
+        break;
     }
 }
 function upgrade()
 {
-    chdir(CURRENT_WORKIN_DIR);
+    chdir(CURRENT_WORKING_DIR);
     echo "\nstartUpgrade\n";
     if (file_exists(SETTINGS_FILE)) {
         $settings = file_get_contents(SETTINGS_FILE);

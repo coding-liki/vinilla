@@ -6,7 +6,7 @@ class Script{
     public $name;
     public function __construct($module_name, $script_name, $type = "php") {
         $this->name = $script_name;
-        $this->path = CURRENT_WORKIN_DIR."/vendor/$module_name/scripts/$script_name";
+        $this->path = CURRENT_WORKING_DIR."/vendor/$module_name/scripts/$script_name";
 
         $this->type = $type;
     }

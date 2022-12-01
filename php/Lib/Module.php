@@ -9,7 +9,9 @@ class Module
     public $git_name = "";
     public $initialised = false;
     public $local_version = "";
-    public $scripts;
+    public $scripts = [];
+
+    public $bins = [];
 
     public function __construct($settings)
     {
@@ -17,12 +19,8 @@ class Module
             $this->init($settings);
             return;
         }
-        $this->settings = $settings;
 
-        $this->name = $settings['name'] ?? "";
-        $this->vendor = $settings['vendor'] ?? "";
-        $this->url = $settings['repo_url'] ?? "";
-        $this->scripts = $settings['scripts'] ?? [];
+        $this->parseSettings($settings);
 
         $git_module_name = explode("/", $this->url);
         $git_module_name = $git_module_name[count($git_module_name) - 1];
@@ -35,18 +33,24 @@ class Module
         }
     }
 
+    public function parseSettings(array $settings)
+    {
+        $this->settings = $settings;
+
+        $this->name = $settings['name'] ?? "";
+        $this->vendor = $settings['vendor'] ?? "";
+        $this->url = $settings['repo_url'] ?? "";
+        $this->scripts = $settings['scripts'] ?? [];
+        $this->bins = $settings['bins'] ?? [];
+    }
+
     public function init($module_url, $tmp_folder = TMP_DIR)
     {
         $git_module_name = gitFetchModule($module_url, $tmp_folder);
         if (is_file($tmp_folder . "/$git_module_name/" . SETTINGS_FILE)) {
             $module_settings = json_decode(file_get_contents($tmp_folder . "/$git_module_name/" . SETTINGS_FILE), true);
 
-            $this->settings = $module_settings;
-
-            $this->name = $module_settings['name'] ?? "";
-            $this->vendor = $module_settings['vendor'] ?? "";
-            $this->url = $module_settings['repo_url'] ?? "";
-            $this->scripts = $module_settings['scripts'] ?? [];
+            $this->parseSettings($module_settings);
 
             $this->git_name = $git_module_name;
 
@@ -85,9 +89,8 @@ class Module
 
     public function runScripts()
     {
-        print_r($this->scripts);
         foreach ($this->scripts as $script) {
-            echo "run script \n";
+            echo "run script: \n";
             print_r($script);
             $script_o = new Script($this->getFullName(), $script['name'], $script['type'] ?? "php");
             $script_o->run();
@@ -97,7 +100,7 @@ class Module
     public function isInstalled()
     {
         $cwd = getcwd();
-        chdir(CURRENT_WORKIN_DIR);
+        chdir(CURRENT_WORKING_DIR);
         $full_name = $this->getFullName();
         if ($this->initialised && is_dir("./vendor/" . $full_name)) {
             if (is_file("./vendor/$full_name/" . SETTINGS_FILE)) {
@@ -117,7 +120,7 @@ class Module
     {
         if ($this->isInstalled() === MODULE_INSTALLED_AND_VINILLA) {
             $cwd = getcwd();
-            chdir(CURRENT_WORKIN_DIR);
+            chdir(CURRENT_WORKING_DIR);
             $local_settings = json_decode(file_get_contents("./vendor/" . $this->getFullName() . "/" . SETTINGS_FILE),
                 true);
             $this->local_version = $local_settings['version'];
