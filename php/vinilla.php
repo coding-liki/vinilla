@@ -385,13 +385,19 @@ function upgrade()
 function showBins()
 {
     global $one_commands;
-    $bins = json_decode(file_get_contents(BINS_FOLDER.BINS_JSON_FILE_NAME), true);
+    $bins = json_decode(file_get_contents(BINS_FOLDER . BINS_JSON_FILE_NAME), true);
 
     $binNames = array_keys($bins);
 
     $binNames += $one_commands;
+    $binNames += [
+        'install',
+        'uninstall',
+        'update',
+    ];
     echo implode(" ", $binNames);
 }
+
 if ($argc < 3) {
     switch ($command) {
         case 'help':
