@@ -416,8 +416,10 @@ if ($argc < 3) {
             break;
         case 'upgrade':
             upgrade();
+            break;
         case 'bins':
             showBins();
+            break;
     }
 }
 // print_r($options);

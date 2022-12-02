@@ -55,12 +55,7 @@ cp -r ./$type $folder/
 
 echo "copy complete"
 
-if $create_alias 
-then
-interpretator=`cat ./$type/interpretator`
-alias="alias vinilla_$type=\"$interpretator $folder/$type/vinilla`cat ./$type/extension`\""
-echo "bash alias will be '$alias'"
-fi
+source ./bash/bash.sh
 
-echo $alias >> ~/.bashrc
+
 echo "complete installation"
