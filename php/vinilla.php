@@ -284,8 +284,9 @@ $one_commands = [
     'update',
     'load',
     'clear',
-    "self-update",
+    'self-update',
     'upgrade',
+    'bins'
 ];
 
 if ($argc > 1) {
@@ -303,7 +304,6 @@ function echoHelp()
     echo "Для обновления Vinilla Packet Manager используйте `vinilla_php self-update`\n";
     exit(1);
 }
-
 
 
 function tryExecute(string $command, array $arguments)
@@ -338,22 +338,22 @@ for ($i = 2; $i <= $argc; $i++) {
     $break = false;
     switch ($command) {
         case "install":
-            if($i<$argc)
-            installModule($argv[$i]);
+            if ($i < $argc)
+                installModule($argv[$i]);
             break;
         case "uninstall":
-            if($i<$argc)
+            if ($i < $argc)
                 uninstallModule($argv[$i]);
             break;
         case "update":
-            if($i<$argc)
+            if ($i < $argc)
                 updateModule($argv[$i]);
             break;
         case "getcache":
             Cache::updateCache();
             break;
         default:
-            if(!in_array($command, $one_commands, true)){
+            if (!in_array($command, $one_commands, true)) {
                 tryExecute($command, $argv);
                 $break = true;
             }
@@ -382,6 +382,15 @@ function upgrade()
     }
 }
 
+function showBins()
+{
+    $bins = json_decode(file_get_contents(BINS_FOLDER.BINS_JSON_FILE_NAME), true);
+
+    $binNames = array_keys($bins);
+
+    print_r($binNames);
+}
+
 if ($argc < 3) {
     switch ($command) {
         case 'help':
@@ -407,6 +416,8 @@ if ($argc < 3) {
             break;
         case 'upgrade':
             upgrade();
+        case 'bins':
+            showBins();
     }
 }
 // print_r($options);
