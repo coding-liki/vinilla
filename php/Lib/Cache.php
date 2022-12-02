@@ -46,7 +46,6 @@ class Cache{
     public static function loadCache(): array{
         static $cache_json = null;
 
-        echo "Loading Cache\n";
         if($cache_json !== null){
             return $cache_json;
         }
