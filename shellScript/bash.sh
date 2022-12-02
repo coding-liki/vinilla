@@ -1,4 +1,4 @@
-installed=`test grep "source .vinillarc" ~/.bashrc`
+installed=`grep "source .vinillarc" ~/.bashrc`
 
 if !$installed
 then
