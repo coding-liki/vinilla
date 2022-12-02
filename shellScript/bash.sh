@@ -1,6 +1,5 @@
-installed=`grep "source .vinillarc" ~/.bashrc`
 
-if ! $installed
+if ! grep "source .vinillarc" ~/.bashrc
 then
 cp ./bash.sh ~/.vinillarc
 
