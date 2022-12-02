@@ -388,7 +388,7 @@ function showBins()
 
     $binNames = array_keys($bins);
 
-    print_r($binNames);
+    echo implode("\n", $binNames);
 }
 
 if ($argc < 3) {
