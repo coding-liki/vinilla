@@ -1,7 +1,7 @@
 
 if ! grep "source .vinillarc" ~/.bashrc
 then
-cp ./bash.sh ~/.vinillarc
+cp ./shellScript/bash.sh ~/.vinillarc
 
 interpretator=`cat ./$type/interpretator`
 alias="alias vinilla_$type=\"$interpretator $folder/$type/vinilla`cat ./$type/extension`\""
