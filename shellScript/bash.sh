@@ -12,10 +12,11 @@ echo "
 _vinilla_completions()
 {
     bins=\`vinilla_$type bins\`
-    for bin in \$bins
-    do
-        COMPREPLY+=(\"\$bin\")
-    done
+    COMPREPLY=(\$(compgen -W \"\$bins\" \"\${COMP_WORDS[1]}\"))
+#    for bin in \$bins
+#    do
+#        COMPREPLY+=(\"\$bin\")
+#    done
 }
 
 " >>  ~/.vinillarc
