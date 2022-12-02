@@ -389,12 +389,12 @@ function showBins()
 
     $binNames = array_keys($bins);
 
-    $binNames += $one_commands;
-    $binNames += [
+    array_push($binNames, ...$one_commands);
+    array_push($binNames, ...[
         'install',
         'uninstall',
         'update',
-    ];
+    ]);
     echo implode(" ", $binNames);
 }
 
