@@ -1,5 +1,5 @@
 
-if ! grep "source .vinillarc" ~/.bashrc
+if ! grep ".vinillarc" ~/.bashrc
 then
 cp ./shellScript/bash.source ~/.vinillarc
 
@@ -21,7 +21,7 @@ _vinilla_completions()
 " >>  ~/.vinillarc
 echo "complete -F _vinilla_completions vinilla_$type" >> ~/.vinillarc
 
-echo "source .vinillarc" >> ~/.bashrc
+echo "source \$HOME/.vinillarc" >> ~/.bashrc
 fi
 
 
