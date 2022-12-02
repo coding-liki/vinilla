@@ -384,13 +384,14 @@ function upgrade()
 
 function showBins()
 {
+    global $one_commands;
     $bins = json_decode(file_get_contents(BINS_FOLDER.BINS_JSON_FILE_NAME), true);
 
     $binNames = array_keys($bins);
 
-    echo implode("\n", $binNames);
+    $binNames += $one_commands;
+    echo implode(" ", $binNames);
 }
-
 if ($argc < 3) {
     switch ($command) {
         case 'help':
