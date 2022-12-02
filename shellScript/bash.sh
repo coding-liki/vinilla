@@ -1,7 +1,7 @@
 
 if ! grep "source .vinillarc" ~/.bashrc
 then
-cp ./shellScript/bash.sh ~/.vinillarc
+cp ./shellScript/bash.source ~/.vinillarc
 
 interpretator=`cat ./$type/interpretator`
 alias="alias vinilla_$type=\"$interpretator $folder/$type/vinilla`cat ./$type/extension`\""
@@ -12,9 +12,9 @@ echo "
 _vinilla_completions()
 {
     bins=\`vinilla_$type bins\`
-    for bin in $bins
+    for bin in \$bins
     do
-        COMPREPLY+=(\"$bin\")
+        COMPREPLY+=(\"\$bin\")
     done
 }
 
