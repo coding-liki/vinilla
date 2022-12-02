@@ -20,6 +20,8 @@ _vinilla_completions()
 
 " >>  ~/.vinillarc
 echo "complete -F _vinilla_completions vinilla_$type" >> ~/.vinillarc
+
+echo "source .vinillarc" >> ~/.bashrc
 fi
 
 
