@@ -55,7 +55,7 @@ cp -r ./$type $folder/
 
 echo "copy complete"
 
-source ./bash/bash.sh
+source ./shellScript/bash.sh
 
 
 echo "complete installation"
