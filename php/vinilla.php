@@ -286,7 +286,8 @@ $one_commands = [
     'clear',
     'self-update',
     'upgrade',
-    'bins'
+    'bins',
+    'list'
 ];
 
 if ($argc > 1) {
@@ -398,6 +399,13 @@ function showBins()
     echo implode(" ", $binNames);
 }
 
+function listPackages()
+{
+    $packages = array_keys(Cache::$fullNameIndex);
+
+    echo implode(" ", $packages);
+}
+
 if ($argc < 3) {
     switch ($command) {
         case 'help':
@@ -426,6 +434,9 @@ if ($argc < 3) {
             break;
         case 'bins':
             showBins();
+            break;
+        case  'list':
+            listPackages();
             break;
     }
 }
