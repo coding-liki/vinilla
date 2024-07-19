@@ -8,15 +8,37 @@ alias="alias vinilla_$type=\"$interpretator $folder/$type/vinilla`cat ./$type/ex
 echo "bash alias will be '$alias'"
 
 echo $alias >> ~/.vinillarc
+
 echo "
 _vinilla_completions()
 {
-    bins=\`vinilla_$type bins\`
-    COMPREPLY=(\$(compgen -W \"\$bins\" \"\${COMP_WORDS[1]}\"))
-#    for bin in \$bins
-#    do
-#        COMPREPLY+=(\"\$bin\")
-#    done
+    COMPREPLY=()
+
+    currentInputWord=\"\${COMP_WORDS[COMP_CWORD]}\"
+
+    if [[ \${COMP_CWORD} == 1 ]] ; then
+        availableCommands=\`vinilla_$type show-bins\`
+        COMPREPLY=( \$(compgen -W \"\$availableCommands\" -- \$currentInputWord))
+    fi
+
+    commandName=\"\${COMP_WORDS[1]}\"
+
+    case \$commandName in
+    install)
+        availablePackages=\`vinilla_$type list -c\`
+
+        COMPREPLY=( \$(compgen -W \"\$availablePackages\" -- \$currentInputWord) )
+        return 0
+        ;;
+    update|uninstall)
+        installedPackages=\`vinilla_$type list -c -i\`
+
+        COMPREPLY=( \$(compgen -W \"\$installedPackages\" -- \$currentInputWord) )
+        return 0
+        ;;
+    esac
+
+    return 0
 }
 
 " >>  ~/.vinillarc
