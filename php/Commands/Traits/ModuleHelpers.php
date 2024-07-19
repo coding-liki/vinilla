@@ -17,7 +17,7 @@ trait ModuleHelpers
         }
     }
 
-    public function installModule($module_url, $updating = false): void
+    public function installModule(string $module_url, bool $updating = false): void
     {
         static $depth = 0;
         $depth++;
@@ -103,9 +103,7 @@ trait ModuleHelpers
         } else {
             echo "You have the newest version of $vendor/$install_module_name\n";
         }
-        if ($depth === 1) {
-            $this->postInstallProcess();
-        }
+
         chdir($cwd);
     }
 
@@ -229,6 +227,7 @@ trait ModuleHelpers
 
     public function updateModule(string $module_name): void
     {
+        chdir(CURRENT_WORKING_DIR);
         $this->checkRootPath();
         $module = Cache::$fullNameIndex[$module_name] ?? Cache::$urlIndex[$module_name] ?? new Module($module_name);
         if ($module->isInstalled()) {

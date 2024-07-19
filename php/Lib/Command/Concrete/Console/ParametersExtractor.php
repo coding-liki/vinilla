@@ -15,6 +15,7 @@ use Lib\Command\Parameters\ParameterDescription;
 use Lib\Command\Parameters\ParameterDescriptionInterface;
 use Lib\Command\Parameters\ParametersCollection;
 use Lib\Command\Parameters\ParametersExtractorInterface;
+use Lib\Command\Parameters\ValuePresenceMod;
 use Lib\StateMachine\StateMachine;
 
 class ParametersExtractor implements ParametersExtractorInterface
@@ -35,6 +36,9 @@ class ParametersExtractor implements ParametersExtractorInterface
 
             if ($parametersDescription->getShortName()) {
                 $this->nameToDescriptionMap[$parametersDescription->getShortName()] = $parametersDescription;
+            }
+            if ($parametersDescription->getValuePresenceMod() === ValuePresenceMod::FROM_REST) {
+                $this->fromRestDescriptionList[] = $parametersDescription;
             }
         }
 

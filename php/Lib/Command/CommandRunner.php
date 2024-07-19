@@ -3,6 +3,7 @@
 namespace Lib\Command;
 
 use Lib\Command\Parameters\ParametersExtractorInterface;
+use Lib\Command\Parameters\ValuePresenceMod;
 
 class CommandRunner
 {
@@ -35,9 +36,23 @@ class CommandRunner
             $command = $this->commandList[$nextCommandContext->name]
                 ?? throw new \Exception("Unknown command `{$nextCommandContext->name}`");
 
-            $parameters = $nextCommandContext->parametersCollection
-                ?? $this->parametersExtractor->extract($command->getParametersDescription());
-
+            try {
+                $parameters = $nextCommandContext->parametersCollection
+                    ?? $this->parametersExtractor->extract($command->getParametersDescription());
+            } catch (\Throwable $exception) {
+                echo "{$command->getName()}\n";
+                foreach ($command->getParametersDescription() as $parameter) {
+                    echo "{$parameter->getName()}";
+                    echo " " . match ($parameter->getValuePresenceMod()) {
+                            ValuePresenceMod::FROM_REST => "без аргумента",
+                            ValuePresenceMod::NO_VALUE => "без значения",
+                            ValuePresenceMod::OPTIONAL => "значение не обязательно",
+                            ValuePresenceMod::REQUIRED => "значение обязательно",
+                        };
+                    echo " - {$parameter->getDescription()}\n";
+                }
+                throw $exception;
+            }
             $command->setParameters($parameters);
 
             $nextCommandContext = $command->run();
