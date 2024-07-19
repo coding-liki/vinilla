@@ -1,5 +1,10 @@
 <?php
 
+use Lib\Command\CommandRunner;
+use Lib\Command\Concrete\Console;
+
+require_once __DIR__ . "/vendor/CodingLiki/Autoloader/Autoloader.php";
+
 require_once __DIR__ . "/include.php";
 
 const BINS_FOLDER = CURRENT_WORKING_DIR . "/vendor/.bin/";
@@ -127,29 +132,6 @@ function updateProjectDependencies(string $current_working_dir, array $addDepend
     chdir($theCwd);
 }
 
-function printPackageInfo()
-{
-    chdir(CURRENT_WORKING_DIR);
-    if (file_exists(SETTINGS_FILE)) {
-        $settings = file_get_contents(SETTINGS_FILE);
-        $module = new Module(json_decode($settings, true));
-        print_r($module->settings);
-    } else {
-        echo "Проинициализируйте проект!!!\n";
-        echoHelp();
-    }
-
-    exit(0);
-}
-
-function checkAndInstallDependencies(Module $module)
-{
-    $dependencies = $module->getDependencies();
-    foreach ($dependencies as $dependency) {
-        installModule($dependency);
-    }
-}
-
 function uninstallModule($module_name)
 {
     checkRootPath();
@@ -181,32 +163,6 @@ function updateModule($module_name)
     }
 }
 
-function initialiseProject()
-{
-    chdir(CURRENT_WORKING_DIR);
-    echo "\nstartInit\n";
-    if (file_exists(SETTINGS_FILE)) {
-        $settings = file_get_contents(SETTINGS_FILE);
-        $module = new Module(json_decode($settings, true, 512, JSON_THROW_ON_ERROR));
-        checkAndInstallDependencies($module);
-        postInstallProcess();
-    } else {
-        $settings = [];
-        echo "Введите название проекта: ";
-        $settings['name'] = readline();
-        if (empty($settings['name'])) {
-            $settings['name'] = basename(CURRENT_WORKING_DIR);
-            echo sprintf("Название проекта выбрано на основание текущей папки проекта - %s\n", $settings['name']);
-        }
-        echo "Введите вендора проекта: ";
-        $settings['vendor'] = readline();
-        echo "Введите описание проекта: ";
-        $settings['description'] = readline();
-        echo "Введите адрес репозитория для проекта: ";
-        $settings['repo_url'] = readline();
-        saveSettings($settings);
-    }
-}
 
 function postInstallProcess()
 {
@@ -258,22 +214,6 @@ function saveSettings(array $settings)
     file_put_contents(SETTINGS_FILE, json_encode($settings, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
 }
 
-function clearVendors()
-{
-    deleteDir("./vendor");
-    echo "Deleting all vendors\n";
-}
-
-function selfUpdate()
-{
-    $interpreter = "php";
-    $install_dir = str_replace("/php", "", __DIR__);
-    chdir(TMP_DIR);
-    gitFetchModule("https://github.com/coding-liki/vinilla.git", "./");
-    chdir("vinilla");
-    exec("./install.sh -t $interpreter -f $install_dir");
-    echo "Updated successfully";
-}
 
 checkTmpFolder();
 $command = "";
@@ -316,7 +256,10 @@ function tryExecute(string $command, array $arguments)
     chdir($binFolder);
 
     try {
-        $binsConfiguration = json_decode(file_get_contents(BINS_JSON_FILE_NAME), true);
+        $binsConfiguration = file_exists(BINS_JSON_FILE_NAME)
+            ? json_decode(file_get_contents(BINS_JSON_FILE_NAME), true)
+            : [];
+
         if (!isset($binsConfiguration[$command])) {
             throw new RuntimeException("No execute configuration\n");
         }
@@ -334,6 +277,30 @@ function tryExecute(string $command, array $arguments)
         echo "Can not execute $command\n $t\n";
     }
 }
+
+$commandsRunner = new CommandRunner(new Console\NameExtractor(), new Console\ParametersExtractor());
+$commandsRunner->addCommandList([
+    new \Commands\Help($commandsRunner),
+    new \Commands\UpdateCache(),
+    new \Commands\Update(),
+    new \Commands\PrintCommand(),
+    new \Commands\Init(),
+    new \Commands\SelfUpdate(),
+    new \Commands\Clear(),
+    new \Commands\Upgrade(),
+    new \Commands\ListCommand(),
+    new \Commands\ShowBins($commandsRunner),
+]);
+
+try {
+    $commandsRunner->run();
+} catch (Throwable $t) {
+    echo "{$t}\n";
+    $commandsRunner->printKnownCommands();
+}
+
+exit(1);
+
 
 for ($i = 2; $i <= $argc; $i++) {
     $break = false;
@@ -367,37 +334,6 @@ for ($i = 2; $i <= $argc; $i++) {
 if ($argc < 3 && !in_array($command, $one_commands, true)) {
     echoHelp();
 }
-function upgrade()
-{
-    chdir(CURRENT_WORKING_DIR);
-    echo "\nstartUpgrade\n";
-    if (file_exists(SETTINGS_FILE)) {
-        $settings = file_get_contents(SETTINGS_FILE);
-        $module = new Module(json_decode($settings, true));
-        $dependencies = $module->getDependencies();
-        foreach ($dependencies as $dependency) {
-            updateModule($dependency);
-        }
-
-        runPostInstallDependencyScripts($module);
-    }
-}
-
-function showBins()
-{
-    global $one_commands;
-    $bins = json_decode(file_get_contents(BINS_FOLDER . BINS_JSON_FILE_NAME), true);
-
-    $binNames = array_keys($bins);
-
-    array_push($binNames, ...$one_commands);
-    array_push($binNames, ...[
-        'install',
-        'uninstall',
-        'update',
-    ]);
-    echo implode(" ", $binNames);
-}
 
 function listPackages()
 {
@@ -408,33 +344,6 @@ function listPackages()
 
 if ($argc < 3) {
     switch ($command) {
-        case 'help':
-            echoHelp();
-            break;
-        case 'print':
-            printPackageInfo();
-            break;
-        case "init":
-            initialiseProject();
-            break;
-        case "update":
-            Cache::updateCache();
-            break;
-        case "self-update":
-            selfUpdate();
-            break;
-        case "clear":
-            clearVendors();
-            break;
-        case "load":
-            Cache::loadCache();
-            break;
-        case 'upgrade':
-            upgrade();
-            break;
-        case 'bins':
-            showBins();
-            break;
         case  'list':
             listPackages();
             break;

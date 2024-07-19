@@ -1,19 +1,21 @@
 <?php
 
+namespace Lib;
+
 class Module
 {
-    public $url = "";
-    public $name = "";
-    public $vendor = "";
-    public $settings = [];
-    public $git_name = "";
-    public $initialised = false;
-    public $local_version = "";
-    public $scripts = [];
+    public string $url = "";
+    public string $name = "";
+    public string $vendor = "";
+    public array $settings = [];
+    public string $git_name = "";
+    public bool $initialised = false;
+    public string $local_version = "";
+    public array $scripts = [];
 
-    public $bins = [];
+    public array $bins = [];
 
-    public function __construct($settings)
+    public function __construct(string|array $settings)
     {
         if (is_string($settings)) {
             $this->init($settings);
@@ -33,7 +35,7 @@ class Module
         }
     }
 
-    public function parseSettings(array $settings)
+    public function parseSettings(array $settings): void
     {
         $this->settings = $settings;
 
@@ -44,7 +46,7 @@ class Module
         $this->bins = $settings['bins'] ?? [];
     }
 
-    public function init($module_url, $tmp_folder = TMP_DIR)
+    public function init($module_url, $tmp_folder = TMP_DIR): void
     {
         $git_module_name = gitFetchModule($module_url, $tmp_folder);
         if (is_file($tmp_folder . "/$git_module_name/" . SETTINGS_FILE)) {
@@ -60,12 +62,12 @@ class Module
         }
     }
 
-    public function getFullName()
+    public function getFullName(): string
     {
         return $this->vendor . "/" . $this->name;
     }
 
-    public function getDependencies()
+    public function getDependencies(): array
     {
         if (isset($this->settings['depends_on'])) {
             return $this->settings['depends_on'];
@@ -78,7 +80,7 @@ class Module
         return [];
     }
 
-    public function setDependencies(array $dependencies)
+    public function setDependencies(array $dependencies): void
     {
         if (isset($this->settings['depends_on'])) {
             $this->settings['depends_on'] = $dependencies;
@@ -87,7 +89,7 @@ class Module
         }
     }
 
-    public function runScripts()
+    public function runScripts(): void
     {
         foreach ($this->scripts as $script) {
             echo "run script: \n";
@@ -97,7 +99,7 @@ class Module
         }
     }
 
-    public function isInstalled()
+    public function isInstalled(): int
     {
         $cwd = getcwd();
         chdir(CURRENT_WORKING_DIR);
@@ -116,7 +118,7 @@ class Module
         }
     }
 
-    public function loadLocalVersion()
+    public function loadLocalVersion(): void
     {
         if ($this->isInstalled() === MODULE_INSTALLED_AND_VINILLA) {
             $cwd = getcwd();

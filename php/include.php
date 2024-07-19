@@ -1,5 +1,7 @@
 <?php
 
+use Lib\Cache;
+
 const SETTINGS_FILE = "vinilla.json";
 const BINS_CONFIG_FILE = 'bins.json';
 const TMP_DIR = "/tmp/vinilla_install_temp";
@@ -7,6 +9,8 @@ const SERVER_URL = "vinillaserver.vinylcoding.ru";
 const MODULE_NOT_INSTALLED = 0;
 const MODULE_INSTALLED_AND_VINILLA = 1;
 const MODULE_INSTALLED_NOT_VINILLA = 2;
+const VINILLA_INSTALLATION_DIR = __DIR__;
+
 define("CURRENT_WORKING_DIR", getcwd());
 
 ini_set('display_errors', 1);
@@ -48,6 +52,7 @@ function deleteDir($src): void
             if (is_dir($src . '/' . $file)) {
                 deleteDir($src . '/' . $file);
             } else {
+                echo "Delete $src/$file\n";
                 unlink($src . '/' . $file);
             }
         }
@@ -152,9 +157,5 @@ function guessModuleUrl($module_url)
     return "";
 }
 
-require_once __DIR__ . "/Lib/Script.php";
-require_once __DIR__ . "/Lib/Module.php";
-
-require_once __DIR__ . "/Lib/Cache.php";
 
 Cache::loadCache();

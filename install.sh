@@ -29,7 +29,7 @@ while getopts ":t:f:a" opt; do
     esac
 done
 
-# check for type existense
+# check for type existence
 if [ -d "./$type" ]
 then
     echo "can install $type now"
