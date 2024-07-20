@@ -158,6 +158,7 @@ trait ModuleHelpers
 
     public function updateProjectDependencies(string $current_working_dir, array $addDependencies = [], array $removeDependencies = []): void
     {
+        echo "update Dependencies";
         $theCwd = getcwd();
         chdir($current_working_dir);
         $settings = file_get_contents(SETTINGS_FILE);

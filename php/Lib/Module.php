@@ -69,24 +69,14 @@ class Module
 
     public function getDependencies(): array
     {
-        if (isset($this->settings['depends_on'])) {
-            return $this->settings['depends_on'];
-        }
-
-        if (isset($this->settings['dependencies'])) {
-            return $this->settings['dependencies'];
-        }
-
-        return [];
+        return $this->settings['depends_on'] ?? $this->settings['dependencies'] ?? [];
     }
 
     public function setDependencies(array $dependencies): void
     {
-        if (isset($this->settings['depends_on'])) {
-            $this->settings['depends_on'] = $dependencies;
-        } elseif (isset($this->settings['dependencies'])) {
-            $this->settings['dependencies'] = $dependencies;
-        }
+        $dependenciesField = isset($this->settings['depends_on']) ? 'depends_on' : 'dependencies';
+
+        $this->settings[$dependenciesField] = $dependencies;
     }
 
     public function runScripts(): void
