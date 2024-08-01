@@ -2,6 +2,8 @@
 
 namespace Lib\Command;
 
+use Lib\Command\Parameters\ParameterDescription;
+use Lib\Command\Parameters\ParameterDescriptionInterface;
 use Lib\Command\Parameters\ParametersExtractorInterface;
 use Lib\Command\Parameters\ValuePresenceMod;
 
@@ -37,8 +39,12 @@ class CommandRunner
                 ?? throw new \Exception("Unknown command `{$nextCommandContext->name}`");
 
             try {
+                $parametersDescriptionList = $command->getParametersDescription();
+
+                array_unshift($parametersDescriptionList, (new ParameterDescription("help", "Вывести описание команды и её параметров"))->setShortName('h'));
+
                 $parameters = $nextCommandContext->parametersCollection
-                    ?? $this->parametersExtractor->extract($command->getParametersDescription());
+                    ?? $this->parametersExtractor->extract($parametersDescriptionList);
             } catch (\Throwable $exception) {
                 echo "{$command->getName()}\n";
                 foreach ($command->getParametersDescription() as $parameter) {
@@ -53,9 +59,19 @@ class CommandRunner
                 }
                 throw $exception;
             }
-            $command->setParameters($parameters);
 
-            $nextCommandContext = $command->run();
+            if ($parameters->has('help')) {
+                echo implode("\n", [
+                    $commandName,
+                    $command::getHelpDescription(),
+                    ...array_map($this->printParametersDescription(...), $command->getParametersDescription()),
+                    '',
+                ]);
+                $nextCommandContext = NULL;
+            } else {
+                $command->setParameters($parameters);
+                $nextCommandContext = $command->run();
+            }
         }
     }
 
@@ -72,5 +88,11 @@ class CommandRunner
     public function getKnownCommandNames(): array
     {
         return array_keys($this->commandList);
+    }
+
+    private function printParametersDescription(ParameterDescriptionInterface $description): string
+    {
+        $shortName = $description->getShortName() ?? 'без короткого имени';
+        return "{$description->getName()}($shortName) - {$description->getDescription()}";
     }
 }

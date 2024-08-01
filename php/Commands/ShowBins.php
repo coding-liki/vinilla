@@ -23,10 +23,13 @@ class ShowBins extends AbstractCommand
 
     public function run(): ?CommandContext
     {
-        $bins = json_decode(file_get_contents(BINS_FOLDER . BINS_JSON_FILE_NAME), true);
+        if (file_exists(BINS_FOLDER . BINS_JSON_FILE_NAME)) {
+            $bins = json_decode(file_get_contents(BINS_FOLDER . BINS_JSON_FILE_NAME), true);
 
-        $binNames = array_keys($bins);
-
+            $binNames = array_keys($bins);
+        } else {
+            $binNames = [];
+        }
         array_push($binNames, ...$this->runner->getKnownCommandNames());
         echo implode(" ", $binNames);
         return NULL;

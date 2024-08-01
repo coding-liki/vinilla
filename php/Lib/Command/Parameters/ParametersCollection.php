@@ -13,9 +13,7 @@ class ParametersCollection
 
     public function get(string $name): mixed
     {
-
         $parameter = $this->parametersList[$name] ?? NULL;
-
 
         if (is_array($parameter)) {
             return array_map(fn(ParameterInterface $parameterData) => $parameterData->getValue(), $parameter);
@@ -27,14 +25,6 @@ class ParametersCollection
     public function has(string $name): bool
     {
         return array_key_exists($name, $this->parametersList);
-    }
-
-    public function addParameterList(array $parametersList): static
-    {
-        foreach ($parametersList as $parameter) {
-            $this->addParameter($parameter);
-        }
-        return $this;
     }
 
     public function addParameter(ParameterInterface $parameter): static
