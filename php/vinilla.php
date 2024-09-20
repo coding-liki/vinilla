@@ -62,15 +62,16 @@ $commandsRunner->addCommandList([
 
 try {
     $commandsRunner->run();
-} catch (Throwable $t) {
+} catch (Throwable $t1) {
     if ($argc > 1) {
         $command = $argv[1];
     }
     try {
         tryExecute($command, $argv);
-    } catch (Throwable $t) {
+    } catch (Throwable $t2) {
         $commandsRunner->printKnownCommands();
 
-        echo "{$t}";
+        echo "{$t2}";
     }
+    echo "{$t1}";
 }
